@@ -2,7 +2,7 @@
 
 ![BSIM3v3 Logo](https://img.shields.io/badge/BSIM3v3-MOSFET_Model-blue)
 ![Python](https://img.shields.io/badge/Python-3.13.5%2B-green)
-[![License](https://img.shields.io/badge/License-Refer_to_LICENSE-red)]([LICENSE](https://mit-license.org/))
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 A Python implementation of the BSIM3v3 (Berkeley Short-channel IGFET Model) version 3.3 for MOSFET transistors. This model accurately calculates drain current (Ids) and other characteristics based on terminal voltages and physical parameters.
 
@@ -126,7 +126,9 @@ Compares BSIM3v3 with other MOSFET models.
 
 ## License
 
-Refer to the LICENSE file for details.
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## References
 
