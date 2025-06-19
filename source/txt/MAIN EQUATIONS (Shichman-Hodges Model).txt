@@ -1,0 +1,25 @@
+# Shichman-Hodges (Level 1) MOSFET Model Equations
+
+# 1. Effective Channel Dimensions
+L_eff       = L_drawn - 2 * LD
+W_eff       = W_drawn - 2 * WD
+# Constants
+# KP        = UO * COX
+# LAMBDA    = 1 / V_Early (empirical output conductance factor)
+
+# Threshold Voltage with Body Effect
+
+V_TH = VTO + GAMMA * (sqrt(abs(V_SB + PHI)) - sqrt(abs(PHI)))
+
+
+if V_GS < V_TH: Cutoff Region
+    
+    I_D = 0
+
+elif V_DS < (V_GS - V_TH):Linear Region
+
+    I_D = KP * (W_eff / L_eff) * ((V_GS - V_TH) * V_DS - 0.5 * V_DS**2) * (1 + LAMBDA * V_DS)
+
+else: Saturation Region
+    I_D = 0.5 * KP * (W_eff / L_eff) * (V_GS - V_TH)**2 * (1 + LAMBDA * V_DS)
+
