@@ -305,9 +305,9 @@ class BSIM3v3_Model:
             float: Effective gate overdrive voltage in volts
         """
         Vgst            = Vgs - self.Vth
-        Vgsteff         = 2 * self.n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * self.n * self.v_t(T))))
+        nom             = 2 * self.n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * self.n * self.v_t(T))))
         denom           = 1 + 2 * self.n * self.Cox() * np.sqrt(2 * self.Phi_s(T) / (self.q * self.epsSi * self.Nch)) * np.exp(-(Vgst - 2 * self.Voff) / (2 * self.n * self.v_t(T)))
-        self.Vgsteff    = Vgsteff / denom
+        self.Vgsteff    = nom / denom
         return self.Vgsteff
     
     def calculate_Vdsat(self, Vgs, Vbs, T):
