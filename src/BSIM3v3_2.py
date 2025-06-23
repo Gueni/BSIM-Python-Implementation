@@ -558,3 +558,21 @@ if __name__ == "__main__":
     plt.legend()
     plt.grid(True, which='both')
     plt.show()
+
+        #! ------------------------------
+    # Test 5: Id vs Temperature for different Vgs
+    temp_range = np.linspace(250, 400, 50)  # Temperature range from 250K to 400K
+    vgs_values = [0.5, 1.0, 1.5, 2.0]      # Different gate voltages to test
+    vds = 1.0                              # Fixed drain-source voltage
+    
+    plt.figure(figsize=(10, 6))
+    for vgs in vgs_values:
+        ids = [model.compute(vgs, vds, 0.0, T) for T in temp_range]
+        plt.plot(temp_range, ids, label=f'Vgs={vgs}V')
+    
+    plt.title('Drain Current vs Temperature')
+    plt.xlabel('Temperature (K)')
+    plt.ylabel('Id (A)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
