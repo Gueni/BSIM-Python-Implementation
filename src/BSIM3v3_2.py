@@ -562,7 +562,7 @@ if __name__ == "__main__":
         #! ------------------------------
     # Test 5: Id vs Temperature for different Vgs
     temp_range = np.linspace(250, 400, 50)  # Temperature range from 250K to 400K
-    vgs_values = [0.5, 1.0, 1.5, 2.0]      # Different gate voltages to test
+    vgs_values = [0.5, 1.0, 1.5, 2.0, 5, 10, 15, 20]      # Different gate voltages to test
     vds = 1.0                              # Fixed drain-source voltage
     
     plt.figure(figsize=(10, 6))
