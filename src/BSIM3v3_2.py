@@ -77,10 +77,10 @@ class BSIM3v3_Model:
         self.Eta0     = 0.1               # -,     DIBL coefficient in strong inversion
         self.Etab     = -0.07             # -,     Body bias effect on DIBL coefficient
         # Mobility parameters (180nm NMOS)
-        self.mobMod   = 1                 # -,     Mobility model selector
-        self.U0       = 0.4               # m2/V·s, Low-field mobility
-        self.Ua       = 0.5e-9            # m/V,   First-order mobility degradation coefficient
-        self.Ub       = 0.5e-18           # (m/V)2, Second-order mobility degradation coefficient
+        self.mobMod   = 3                 # -,     Mobility model selector
+        self.U0       = 0.05               # m2/V·s, Low-field mobility
+        self.Ua       = 1e-10            # m/V,   First-order mobility degradation coefficient
+        self.Ub       = 1e-19           # (m/V)2, Second-order mobility degradation coefficient
         self.Uc       = -1.0              # -,     Body-effect coefficient for mobility degradation
         # Velocity saturation parameters
         self.VSAT     = 1.2e5             # m/s,   Saturation velocity
@@ -139,6 +139,42 @@ class BSIM3v3_Model:
         self.Cox      = self.epsOx / self.Tox  # F/m², Oxide capacitance per unit area
         self.Esat     = 2 * self.VSAT / self.U0 #Calculate saturation electric field (Esat) for velocity saturation. 
 
+
+    def ni(self, T):
+        """Calculate intrinsic carrier concentration (ni) based on temperature.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Intrinsic carrier concentration in m^-3
+        """
+        ni = self.NI0 * (T / self.Tnom) ** self.NITEXP
+        return ni
+    
+    def v_t(self, T):
+        """Calculate thermal voltage (Vt) based on temperature.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Thermal voltage in volts
+        """
+        return self.k_B * T / self.q
+    
+    def Phi_s(self, T):
+        """Calculate surface potential (Phi_s) based on temperature.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Surface potential in volts
+        """
+        Phi_s = 2 * self.v_t(T) * np.log(self.Nch / self.ni(T))
+        return Phi_s
+    
     def Xdep0(self, T):
         """Calculate zero-bias depletion width based on temperature.
         
@@ -160,41 +196,7 @@ class BSIM3v3_Model:
         Returns:
             float: Built-in potential in volts
         """
-        return self.v_t(T) * np.log(self.Nch * self.Nds / self.ni(T)**2)
-    
-    def ni(self, T):
-        """Calculate intrinsic carrier concentration (ni) based on temperature.
-        
-        Args:
-            T (float): Temperature in Kelvin
-            
-        Returns:
-            float: Intrinsic carrier concentration in m^-3
-        """
-        return self.NI0 * (T / self.Tnom) ** self.NITEXP
-    
-    def Phi_s(self, T):
-        """Calculate surface potential (Phi_s) based on temperature.
-        
-        Args:
-            T (float): Temperature in Kelvin
-            
-        Returns:
-            float: Surface potential in volts
-        """
-        Phi_s = 2 * self.v_t(T) * np.log(self.Nch / self.ni(T))
-        return Phi_s
-    
-    def v_t(self, T):
-        """Calculate thermal voltage (Vt) based on temperature.
-        
-        Args:
-            T (float): Temperature in Kelvin
-            
-        Returns:
-            float: Thermal voltage in volts
-        """
-        return self.k_B * T / self.q
+        return self.v_t(T) * np.log(self.Nch * self.Nds / np.square(self.ni(T)))
     
     def calculate_V_th(self, Vds, Vbs, T):
         """Calculate threshold voltage (Vth) based on BSIM3v3 model (Eq. 2.1.25).
@@ -215,8 +217,8 @@ class BSIM3v3_Model:
             float: Threshold voltage in volts
         """
         # Effective body-source voltage with smoothing (Eq. 2.1.26)
-        Vbc         = 0.9 * (self.Phi_s(T) - self.K1**2 / (4 * self.K2**2))
-        self.Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt((Vbs - Vbc - self.delta)**2 + 4 * self.delta * Vbc))
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        self.Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
         # Depletion widths and characteristic lengths
         self.Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - self.Vbseff) / (self.q * self.Nch))
         lt0         = np.sqrt(self.epsSi * self.Xdep0(T) * self.Tox / self.epsOx)
@@ -236,10 +238,11 @@ class BSIM3v3_Model:
         # Temperature effect on threshold voltage
         delta_T     = (T / self.Tnom) - 1
         term7       = (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * self.Vbseff) * delta_T
-        self.Vth    = term1 + term2 + term3 + term4 + term5 + term6 + term7
-        return self.Vth
+        Vth    = term1 + term2 + term3 + term4 + term5 + term6 + term7
+        #print(f"Vth: {Vth}, Vbseff: {self.Vbseff}, Xdep: {self.Xdep}, Tox: {self.Tox}, Toxm: {self.Toxm}")
+        return Vth
     
-    def calculate_mobility(self, Vgs, T):
+    def calculate_mobility(self, Vgs, T,Vds, Vbs):
         """Calculate effective mobility including degradation effects (Eq. 3.2.1-3.2.3).
         
         Includes:
@@ -254,21 +257,27 @@ class BSIM3v3_Model:
         Returns:
             float: Effective mobility in m²/V·s
         """
-        Vgst        = Vgs - self.Vth
+        Vth         = self.calculate_V_th(Vds, Vbs, T)  
+        Vgst        = Vgs - Vth
         Vgsteff     = 2 * self.n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * self.n * self.v_t(T))))
         Vgsteff     = Vgsteff / (1 + 2 * self.n * self.Cox * np.sqrt(2 * self.Phi_s(T) / (self.q * self.epsSi * self.Nch)) * np.exp(-(Vgst - 2 * self.Voff) / (2 * self.n * self.v_t(T))))
         mob_temp    = self.U0 * (T/self.Tnom)**self.Ute # Temperature effect on mobility
+        
         # Mobility degradation models
         if self.mobMod == 1:
-            denom = 1 + (self.Ua + self.Uc * self.Vbseff) * ((Vgsteff + 2*self.Vth)/self.Tox) + self.Ub * ((Vgsteff + 2*self.Vth)/self.Tox)**2
+            # Vertical field mobility degradation model (Eq. 3.2.1)
+            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *         \
+                    ((Vgsteff + 2*Vth)/self.Tox) +                  \
+                    self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)
+            
         elif self.mobMod == 2:
-            denom = 1 + (self.Ua + self.Uc * self.Vbseff) * (Vgsteff/self.Tox) + self.Ub * (Vgsteff/self.Tox)**2
+            denom = 1 + (self.Ua + self.Uc * self.Vbseff) * (Vgsteff/self.Tox) + self.Ub * np.square(Vgsteff/self.Tox)
         else:  
-            denom = 1 + (self.Ua * (Vgsteff + 2*self.Vth)/self.Tox + self.Ub * ((Vgsteff + 2*self.Vth)/self.Tox)**2) * (1 + self.Uc * self.Vbseff)
-        self.mob_eff = mob_temp / denom
-        return self.mob_eff
+            denom = 1 + (self.Ua * (Vgsteff + 2*Vth)/self.Tox + self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)) * (1 + self.Uc * self.Vbseff)
+        mob_eff = mob_temp / denom
+        return mob_eff
     
-    def calculate_Vgsteff(self, Vgs,T):
+    def calculate_Vgsteff(self, Vgs,T,Vds, Vbs):
         """Calculate effective Vgs-Vth including subthreshold smoothing (Eq. 3.1.3).
         
         Provides smooth transition between subthreshold and strong inversion regions.
@@ -281,13 +290,14 @@ class BSIM3v3_Model:
         Returns:
             float: Effective gate overdrive voltage in volts
         """
-        Vgst            = Vgs - self.Vth
+        Vth             = self.calculate_V_th(Vds, Vbs, T)  
+        Vgst            = Vgs - Vth
         nom             = 2 * self.n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * self.n * self.v_t(T))))
         denom           = 1 + 2 * self.n * self.Cox * np.sqrt(2 * self.Phi_s(T) / (self.q * self.epsSi * self.Nch)) * np.exp(-(Vgst - 2 * self.Voff) / (2 * self.n * self.v_t(T)))
-        self.Vgsteff    = nom / denom
-        return self.Vgsteff
+        Vgsteff    = nom / denom
+        return Vgsteff
     
-    def calculate_Vdsat(self, Vgs, Vbs, T):
+    def calculate_Vdsat(self, Vgs, Vbs, T,Vds):
         """Calculate saturation voltage (Vdsat) (Eq. 3.4.3).
         
         The voltage at which the channel reaches velocity saturation.
@@ -300,9 +310,12 @@ class BSIM3v3_Model:
         Returns:
             float: Saturation voltage in volts
         """
-        self.calculate_Vgsteff(Vgs, T)
-        self.Vdsat = (self.Esat * self.Leff * (self.Vgsteff + 2 * self.v_t(T))) / (self.calculate_Abulk(T) * self.Esat * self.Leff + self.Vgsteff + 2 * self.v_t(T))
-        return self.Vdsat
+        Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        term1 = (self.Esat * self.Leff * (Vgsteff + 2 * self.v_t(T))) 
+        term2 = (self.calculate_Abulk(T) * self.Esat * self.Leff + Vgsteff + 2 * self.v_t(T))
+        Vdsat = term1 / term2
+        
+        return Vdsat
     
     def calculate_Abulk(self, T):
         """Calculate bulk charge effect coefficient (Abulk) (Eq. 2.4.1).
@@ -317,7 +330,7 @@ class BSIM3v3_Model:
         """
         # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
         K1ox        = self.K1 * (self.Tox / self.Toxm)
-        term1       = 1 + (K1ox / (2 * np.sqrt(self.Phi_s(T) - self.Vbseff))) * (self.A0 * self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))) * (1 - self.Ags * (self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep)))**2)
+        term1       = 1 + (K1ox / (2 * np.sqrt(self.Phi_s(T) - self.Vbseff))) * (self.A0 * self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))) * (1 - self.Ags * np.square(self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))))
         term2       = (self.B0 / (self.Weff + self.B1)) / (1 + self.Keta * self.Vbseff)
         self.Abulk  = term1 + term2
         return self.Abulk
@@ -336,12 +349,12 @@ class BSIM3v3_Model:
         Returns:
             float: Effective drain-source voltage in volts
         """
-        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T)
-        Vdext       = Vdsat - 0.5 * (Vdsat - Vds - 0.02 + np.sqrt((Vdsat - Vds - 0.02)**2 + 4 * 0.02 * Vdsat))
-        self.Vdseff = Vdext - 0.5 * (Vdext - Vds - self.delta + np.sqrt((Vdext - Vds - self.delta)**2 + 4 * self.delta * Vdext))
-        return self.Vdseff
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T,Vds)
+        Vdext       = Vdsat - 0.5 * (Vdsat - Vds - self.delta + np.sqrt(np.square(Vdsat - Vds - self.delta) + 4 * self.delta * Vdsat))
+        Vdseff = Vdext - 0.5 * (Vdext - Vds - self.delta + np.sqrt(np.square(Vdext - Vds - self.delta) + 4 * self.delta * Vdext))
+        return Vdseff
     
-    def calculate_subthreshold_current(self, Vgs, Vds, T):
+    def calculate_subthreshold_current(self, Vgs, Vds, T,Vbs):
         """Calculate subthreshold current (Eq. 2.7.1).
         
         Models the current when Vgs < Vth (weak inversion region).
@@ -354,13 +367,15 @@ class BSIM3v3_Model:
         Returns:
             float: Subthreshold drain current in amperes
         """
-        Vgst    = Vgs - self.Vth
+        Vth     = self.calculate_V_th(Vds, Vbs, T)  
+        Vgst    = Vgs - Vth
+        mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
         n       = 1 + (self.Cit + self.Citd * Vds + self.Citb * self.Vbseff) / self.Cox + self.Nfactor * self.epsSi / (self.Cox * self.Xdep)
-        I_s0    = self.mob_eff * (self.Weff / self.Leff) * np.sqrt(self.q * self.epsSi * self.Nch * self.v_t(T)**2 / (2 * self.Phi_s(T)))
+        I_s0    = mob_eff * (self.Weff / self.Leff) * np.sqrt(self.q * self.epsSi * self.Nch * np.square(self.v_t(T)) / (2 * self.Phi_s(T)))
         I_sub   = I_s0 * (1 - np.exp(-Vds / self.v_t(T))) * np.exp((Vgst - self.Voff) / (n * self.v_t(T)))
         return I_sub
     
-    def calculate_linear_current(self, Vds, T):
+    def calculate_linear_current(self, Vds,Vgs, T,Vbs):
         """Calculate linear region current (triode region) (Eq. 3.3.4).
         
         Models the current when Vds < Vdsat.
@@ -372,14 +387,16 @@ class BSIM3v3_Model:
         Returns:
             float: Drain current in amperes
         """
-        Vb      = (self.Vgsteff + 2 * self.v_t(T)) / self.calculate_Abulk(T)
-        I_dso   = self.mob_eff * self.Cox * (self.Weff / self.Leff) * self.Vgsteff * Vds * (1 - Vds / (2 * Vb)) / (1 + Vds / (self.Esat * self.Leff))
+        Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
+        Vb      = (Vgsteff + 2 * self.v_t(T)) / self.calculate_Abulk(T)
+        I_dso   = mob_eff * self.Cox * (self.Weff / self.Leff) * Vgsteff * Vds * (1 - Vds / (2 * Vb)) / (1 + Vds / (self.Esat * self.Leff))
         # Add source-drain resistance effect (Eq. 3.3.5)
         if Vds == 0:
             # Handle the case where Vds is zero (maybe return 0 or a small value)
             I_ds = 0
         else:
-            I_ds = I_dso / (1 + self.Rds * I_dso / Vds)
+            I_ds = I_dso / (1 + self.Rds * I_dso / Vds) #Extrinsic Case (Rds > 0)
         return I_ds
     
     def calculate_saturation_current(self, Vgs, Vds, Vbs, T):
@@ -399,15 +416,16 @@ class BSIM3v3_Model:
         Returns:
             float: Drain current in amperes
         """
+        Vgsteff = self.calculate_Vgsteff(Vgs, T)
         self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
         Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T)
-        I_dsat      = self.Weff * self.VSAT * self.Cox * (self.Vgsteff - self.calculate_Abulk(T) * Vdsat)
+        I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T) * Vdsat)
         # Calculate Early voltages
-        V_Asat      = (self.Esat * self.Leff + Vdsat + 2 * self.Rds * self.VSAT * self.Cox * self.Weff * self.Vgsteff * (1 - self.calculate_Abulk(T) * Vdsat / (2 * (self.Vgsteff + 2 * self.v_t(T))))) / (2/self.A2 - 1 + self.Rds * self.VSAT * self.Cox * self.Weff * self.calculate_Abulk(T))
-        V_ACLM      = (self.calculate_Abulk(T) * self.Esat * self.Leff + self.Vgsteff) / (self.Pclm * self.calculate_Abulk(T) * self.Esat * self.lit) * (Vds - Vdsat)
+        V_Asat      = (self.Esat * self.Leff + Vdsat + 2 * self.Rds * self.VSAT * self.Cox * self.Weff * Vgsteff * (1 - self.calculate_Abulk(T) * Vdsat / (2 * (Vgsteff + 2 * self.v_t(T))))) / (2/self.A2 - 1 + self.Rds * self.VSAT * self.Cox * self.Weff * self.calculate_Abulk(T))
+        V_ACLM      = (self.calculate_Abulk(T) * self.Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T) * self.Esat * self.lit) * (Vds - Vdsat)
         theta_rout  = self.Pdibl1 * (np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 2 * np.exp(-self.Drout * self.Leff / self.lit)) + self.Pdibl2
-        V_ADIBL     = (self.Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * self.Vbseff)) * (1 - self.calculate_Abulk(T) * Vdsat / (self.calculate_Abulk(T) * Vdsat + self.Vgsteff + 2 * self.v_t(T)))
-        V_A         = V_Asat + (1 + self.Pvag * self.Vgsteff / (self.Esat * self.Leff)) * (1 / V_ACLM + 1 / V_ADIBL)**-1
+        V_ADIBL     = (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * self.Vbseff)) * (1 - self.calculate_Abulk(T) * Vdsat / (self.calculate_Abulk(T) * Vdsat + Vgsteff + 2 * self.v_t(T)))
+        V_A         = V_Asat + (1 + self.Pvag * Vgsteff / (self.Esat * self.Leff)) * (1 / V_ACLM + 1 / V_ADIBL)**-1
         # Substrate current induced body effect
         V_ASCBE     = np.exp(self.Pscbe1 * self.lit / (Vds - Vdsat)) * self.Leff / self.Pscbe2
         # Saturation current with all effects
@@ -429,19 +447,17 @@ class BSIM3v3_Model:
         Returns:
             float: Drain current in amperes
         """
-        self.calculate_V_th(Vds, Vbs, T)
-        self.calculate_Vgsteff(Vgs, T)
-        self.calculate_mobility(Vgs, T)
-        self.calculate_Abulk(T)
-        self.calculate_Vdseff(Vds, Vgs, Vbs, T)
+        Vgsteff = self.calculate_Vgsteff(Vgs, T,Vds, Vbs)
+        Vdseff = self.calculate_Vdseff(Vds, Vgs, Vbs, T)
+        Vdsat   =  self.calculate_Vdsat(Vgs,Vbs,T,Vds)
         # Determine operation region and calculate current
-        if self.Vgsteff <= 0:  # Subthreshold region
-            I_ds = self.calculate_subthreshold_current(Vgs, Vds, T)
+        if Vgsteff <= 0:  # Subthreshold region
+            I_ds = self.calculate_subthreshold_current(Vgs, Vds, T, Vbs)
         else:
-            if self.Vdseff < self.Vdsat:  # Linear region
-                I_ds = self.calculate_linear_current(self.Vdseff, T)
+            if Vdseff < Vdsat:  # Linear region
+                I_ds = self.calculate_linear_current(Vdseff, Vgs,T,Vbs)
             else:  # Saturation region
-                I_ds = self.calculate_saturation_current(Vgs, self.Vdseff, Vbs, T)
+                I_ds = self.calculate_saturation_current(Vgs, Vdseff, Vbs, T)
         return I_ds
 #? -------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -491,3 +507,54 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.show()
 #? -------------------------------------------------------------------------------
+    #! ------------------------------
+    # Test 4: Vgsteff vs (Vgs-Vth)
+    vgs_range = np.linspace(0, 5, 100)
+    vth = model.calculate_V_th(0.1, 0, 300)  # Calculate at nominal conditions
+    vgsteff_values = []
+    vgst_values = []
+    
+    Vds = 0.1  # Example value for Vds
+    Vbs = 0.0  # Example value for Vbs
+    for vgs in vgs_range:
+        Vth = model.calculate_V_th(Vds, Vbs, 300)  
+        vgst = vgs - Vth
+        vgsteff = model.calculate_Vgsteff(vgs, 300, Vds, Vbs)
+        vgsteff_values.append(vgsteff)
+        vgst_values.append(vgst)
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(vgst_values, vgsteff_values, label='Vgsteff')
+    plt.plot(vgst_values, vgst_values, '--', label='Ideal Vgsteff = Vgs-Vth')
+    plt.title('Effective Gate Overdrive Voltage vs (Vgs-Vth)')
+    plt.xlabel('Vgs - Vth (V)')
+    plt.ylabel('Vgsteff (V)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+    #! ------------------------------
+    # Test 4: log(Vgsteff) vs (Vgs-Vth)
+    vgs_range = np.linspace(-0.5, 5, 500)  # Extend to negative to see subthreshold
+    vth = model.calculate_V_th(0.1, 0, 300)  # Calculate at nominal conditions
+    vgsteff_values = []
+    vgst_values = []
+    
+    for vgs in vgs_range:
+        Vth = model.calculate_V_th(0.1, 0, 300)  
+        vgst = vgs - Vth
+        vgsteff = model.calculate_Vgsteff(vgs, 300, Vds, Vbs)
+        vgsteff_values.append(vgsteff)
+        vgst_values.append(vgst)
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(vgst_values, np.log10(np.maximum(1e-20, vgsteff_values)), 
+             label='log(Vgsteff)')  # Clip to avoid log(0)
+    plt.axvline(x=0, color='gray', linestyle='--', label='Vgs=Vth')
+    plt.title('log(Effective Gate Overdrive) vs (Vgs-Vth)')
+    plt.xlabel('Vgs - Vth (V)')
+    plt.ylabel('log(Vgsteff) [log(V)]')
+    plt.legend()
+    plt.grid(True, which='both')
+    plt.show()
