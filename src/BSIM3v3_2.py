@@ -93,8 +93,8 @@ class BSIM3v3_Model:
         self.Pdiblb   =  0.0                       # -,     Body effect on DIBL for output resistance
         self.Drout    = 0.56                         # -,     Output resistance DIBL coefficient
         self.Pvag     = 0.0                       # 1/V,   Gate voltage effect on output resistance
-        self.Alpha0   = 0.0                        # -,     Substrate current parameter
-        self.Alpha1   = 0.0                        # -,     Substrate current parameter
+        self.Alpha0   = 0.01                        # -,     Substrate current parameter
+        self.Alpha1   = 0.01                        # -,     Substrate current parameter
         self.Beta0    = 30.0                        # V/m,   Substrate current parameter
         # DIBL and substrate effect parameters
         self.Dsub     = self.Drout                         # -,     DIBL coefficient in subthreshold region
@@ -110,36 +110,37 @@ class BSIM3v3_Model:
         self.Toxm     = 2.0e-9                      # m,     Oxide thickness for modeling
         # Doping concentrations
         self.Nch      = 1.0e23                      # m-3,   Channel doping concentration
-        self.Ngate    = 0                        # m-3,   Poly doping concentration
+        self.Ngate    = 1e25                        # m-3,   Poly doping concentration
         self.Nds      = 1e26                        # m-3,   Source/drain doping concentration
         # Parasitic resistance
         self.Rds      = 50.0                        # ohm,     Source-drain resistance
         # Subthreshold parameters
+        self.n        = 1.5                         # -,     Subthreshold swing coefficient
         self.Voff     = -0.08                       # V,     Offset voltage for subthreshold current
         self.Keta     = -0.047                      # -,     Body effect coefficient for Voff
         self.delta    = 0.01                        # -,     Smoothing parameter for Voff
         # Temperature parameters
-        self.Tnom     = 300.15                       # K,     Nominal temperature
-        self.Kt1      = -0.11                       # V,     Temperature coefficient for Vth
-        self.Kt1l     = 0.0                       # V·m,   Temperature coefficient for Vth
-        self.Kt2      = 0.022                        # -,     Temperature coefficient for Vth
-        self.Ute      = -1.5                        # -,     Mobility temperature exponent
-        self.At       = 3.3E4                      # m/s,   Velocity saturation temperature coefficient
+        self.Tnom     = 300.0                       # K,     Nominal temperature
+        self.Kt1      = -0.15                       # V,     Temperature coefficient for Vth
+        self.Kt1l     = 1e-9                        # V·m,   Temperature coefficient for Vth
+        self.Kt2      = 0.03                        # -,     Temperature coefficient for Vth
+        self.Ute      = -1.8                        # -,     Mobility temperature exponent
+        self.At       = 4.0e4                       # m/s,   Velocity saturation temperature coefficient
         self.Ags      = 0.0                         # -,     Body effect coefficient for bulk charge
         # Additional parameters
         self.Pscbe1   = 4.24E8                      # -,     Substrate current body-effect coefficient 1
         self.Pscbe2   = 1.0E-5                      # -,     Substrate current body-effect coefficient 2
         # State variables
         self.Cit      = 0.0                         # F/m2,  Interface trap capacitance
-        self.Citd     = 0.1                         # F/m2,  Interface trap capacitance derivative
-        self.Citb     = 0.1                         # F/m2,  Interface trap capacitance body effect
-        self.Nfactor  = 1.0                        # -,     Subthreshold slope factor
+        self.Citd     = 0                         # F/m2,  Interface trap capacitance derivative
+        self.Citb     = 0                         # F/m2,  Interface trap capacitance body effect
+        self.Nfactor  = 0                        # -,     Subthreshold slope factor
         self.NI0      = 1.45e16                     # m-3,   Intrinsic carrier concentration at 300K
         self.NITEXP   = 1.5                         # -,     Exponent for temperature dependence of ni
         self.Cox      = self.epsOx / self.Tox       # F/m², Oxide capacitance per unit area
-        self.Cdsc     = 2.4E-4                       # Axial capacitance (F)
-        self.Cdscd    = 0.0                       # Drain-bias sensitivity of Cdsc F/Vm2
-        self.Cdscb    = 0.0                       # Body-bias sensitivity of Cdsc F/Vm2
+        self.Cdsc     = 0                       # Axial capacitance (F)
+        self.Cdscd    = 0                       # Drain-bias sensitivity of Cdsc F/Vm2
+        self.Cdscb    = 0                       # Body-bias sensitivity of Cdsc F/Vm2
 
     def ni(self, T):
         """Calculate intrinsic carrier concentration (ni) based on temperature.
@@ -310,6 +311,7 @@ class BSIM3v3_Model:
         n = 1 + self.Nfactor * (Cd/self.Cox) + \
             ((self.Cdsc+self.Cdscd*Vds+self.Cdscb*Vbseff) *(term1+2*term2))/self.Cox +\
             self.Cit/self.Cox
+        
         Vth             = self.calculate_V_th(Vds, Vbs, T)  
         Vgst            = Vgs - Vth
         nom             = 2 * n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * n * self.v_t(T))))
@@ -319,6 +321,14 @@ class BSIM3v3_Model:
         Vgsteff         = nom / denom
         return Vgsteff
 
+    
+
+    
+
+
+
+
+    
     def calculate_Vdsat(self, Vgs, Vbs, T,Vds):
         """Calculate saturation voltage (Vdsat) (Eq. 3.4.3).
         
@@ -458,7 +468,7 @@ class BSIM3v3_Model:
         I_ds        = I_dsat * (1 + (Vds - Vdsat) / V_A) * (1 + (Vds - Vdsat) / V_ASCBE)
         return I_ds
     
-    def compute(self, Vgs, Vds, Vbs=0.0, T=300.15):
+    def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
         """Calculate drain current for given bias conditions.
         
         Main interface method that determines operation region and calculates
@@ -468,7 +478,7 @@ class BSIM3v3_Model:
             Vgs (float): Gate-source voltage in volts
             Vds (float): Drain-source voltage in volts
             Vbs (float, optional): Bulk-source voltage in volts. Defaults to 0.
-            T (float, optional): Temperature in Kelvin. Defaults to 300.15.
+            T (float, optional): Temperature in Kelvin. Defaults to 300.0.
             
         Returns:
             float: Drain current in amperes
