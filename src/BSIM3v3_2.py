@@ -79,6 +79,9 @@ class BSIM3v3_Model:
         self.Ua       = 2.25E-9                       # m/V,   First-order mobility degradation coefficient
         self.Ub       = 5.87E-19                       # (m/V)2, Second-order mobility degradation coefficient
         self.Uc       = -0.046                        # -,     Body-effect coefficient for mobility degradation mobMod =1, 2:-4.65e-11 mobMod=3:-0.046
+        self.Ua1       = 4.31E-9                       # m/V,   First-order mobility degradation coefficient
+        self.Ub1       = -7.61E-18                       # (m/V)2, Second-order mobility degradation coefficient
+        self.Uc1       = -0.056                        # -,     Body-effect coefficient for mobility degradation mob-Mod=1,2:-5.6E-11 mob-Mod=3:-0.056
         # Velocity saturation parameters
         self.VSAT     = 8.0E4                       # m/s,   Saturation velocity
         self.A0       = 1.0                         # -,     Bulk charge effect coefficient
@@ -106,14 +109,33 @@ class BSIM3v3_Model:
         self.Ldrawn   = 180e-9                      # m,     Drawn channel length
         self.Wdrawn   = 1e-6                        # m,     Drawn channel width
         self.Xj       = 100e-9                      # m,     Junction depth
-        self.Tox      = 2.0e-9                      # m,     Oxide thickness
-        self.Toxm     = 2.0e-9                      # m,     Oxide thickness for modeling
+        self.Tox      = 1.0e-9                      # m,     Oxide thickness
+        self.Toxm     = 1.0e-9                      # m,     Oxide thickness for modeling
+        self.Wint     = 0.0                         # m,     Internal width for narrow width effects
+        self.Wl       = 0.0                         # m,     Length dependence coefficient for width
+        self.Ww       = 0.0                         # m,     Width dependence coefficient for width
+        self.Wln      = 0.0                         # -,     Length dependence exponent for width
+        self.Wwn      = 0.0                         # -,     Width dependence exponent for width
+        self.Lint     = 0.0                         # m,     Internal length for narrow width effects
+        self.Ll       = 0.0                         # m,     Length dependence coefficient for length
+        self.Lw       = 0.0                         # m,     Width dependence coefficient for length
+        self.Lln      = 0.0                         # -,     Length dependence exponent for length
+        self.Lwn      = 0.0                         # -,     Width dependence exponent for length
+        self.dW       = self.Wint + self.Wl/self.Ldrawn**self.Wln + self.Ww/self.Wdrawn**self.Wwn
+        self.dL       = self.Lint + self.Ll/self.Ldrawn**self.Lln + self.Lw/self.Wdrawn**self.Lwn
+        self.Leff     = max(180e-9, self.Ldrawn - 2*self.dL)  # Prevent negative values
+        self.Weff     = max(180e-9, self.Wdrawn - 2*self.dW)
         # Doping concentrations
         self.Nch      = 1.0e23                      # m-3,   Channel doping concentration
         self.Ngate    = 1e25                        # m-3,   Poly doping concentration
         self.Nds      = 1e26                        # m-3,   Source/drain doping concentration
         # Parasitic resistance
         self.Rds      = 50.0                        # ohm,     Source-drain resistance
+        self.Rdsw     = 100.0                       # ohm,     Source/drain width resistance
+        self.Pr       = 0.5                         # -,      Parasitic resistance coefficient
+        self.Wr       = 0.5                         # -,     Width dependence coefficient
+        self.Prwb     = 0.5                         # -,     Body effect coefficient for width
+        self.Prwg     = 0.5                         # -,     Gate voltage effect on Rdsw
         # Subthreshold parameters
         self.n        = 1.5                         # -,     Subthreshold swing coefficient
         self.Voff     = -0.08                       # V,     Offset voltage for subthreshold current
@@ -141,6 +163,7 @@ class BSIM3v3_Model:
         self.Cdsc     = 0                       # Axial capacitance (F)
         self.Cdscd    = 0                       # Drain-bias sensitivity of Cdsc F/Vm2
         self.Cdscb    = 0                       # Body-bias sensitivity of Cdsc F/Vm2
+
 
     def ni(self, T):
         """Calculate intrinsic carrier concentration (ni) based on temperature.
@@ -242,7 +265,14 @@ class BSIM3v3_Model:
         delta_T     = (T / self.Tnom) - 1
         term7       = (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * self.Vbseff) * delta_T
         Vth    = term1 + term2 + term3 + term4 + term5 + term6 + term7
+
         #print(f"Vth: {Vth}, Vbseff: {self.Vbseff}, Xdep: {self.Xdep}, Tox: {self.Tox}, Toxm: {self.Toxm}")
+        return Vth
+    
+    def vth_T_dependent(self,Vds, Vbs, T):
+        """Calculate temperature-dependent threshold voltage (Vth) based on BSIM3v3 model."""
+        Vth_TNOM    = self.calculate_V_th(Vds, Vbs, self.Tnom)
+        Vth = (Vth_TNOM + (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * self.Vbseff) * (T / self.Tnom - 1))
         return Vth
     
     def calculate_mobility(self, Vgs, T,Vds, Vbs):
@@ -260,10 +290,14 @@ class BSIM3v3_Model:
         Returns:
             float: Effective mobility in m²/V·s
         """
-        Vth         = self.calculate_V_th(Vds, Vbs, T)  
+        Vth         = self.vth_T_dependent(Vds, Vbs, T)  
         Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  
-        mob_temp    = self.U0 * (T/self.Tnom)**self.Ute # Temperature effect on mobility
-        
+        # Temperature effect on mobility
+        U0_T    = self.U0 * (T/self.Tnom)**self.Ute 
+        # self.Ua = self.Ua + self.Ua1 * (T / self.Tnom - 1)
+        # self.Ub = self.Ub + self.Ub1 * (T / self.Tnom - 1)
+        # self.Uc = self.Uc + self.Uc1 * (T / self.Tnom - 1)
+
         # Mobility degradation models
         if self.mobMod == 1:
             # Vertical field mobility degradation model (Eq. 3.2.1)
@@ -280,7 +314,7 @@ class BSIM3v3_Model:
                     self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)) *  \
                     (1 + self.Uc * self.Vbseff)
        
-        mob_eff   = mob_temp / denom
+        mob_eff   = U0_T / denom
         # print(f"Vgs: {Vgs}, Vbs: {Vbs}, T: {T}, Vgsteff: {Vgsteff}, Vth: {Vth}, mob_eff: {mob_eff}")
         return mob_eff
     
@@ -312,7 +346,7 @@ class BSIM3v3_Model:
             ((self.Cdsc+self.Cdscd*Vds+self.Cdscb*Vbseff) *(term1+2*term2))/self.Cox +\
             self.Cit/self.Cox
         
-        Vth             = self.calculate_V_th(Vds, Vbs, T)  
+        Vth             = self.vth_T_dependent(Vds, Vbs, T)  
         Vgst            = Vgs - Vth
         nom             = 2 * n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * n * self.v_t(T))))
         denom           = 1 + 2 * n * self.Cox * \
@@ -335,13 +369,18 @@ class BSIM3v3_Model:
             float: Saturation voltage in volts
         """
         Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
-        Esat     = 2 * self.VSAT / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        Esat     = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
         term1 = (Esat * self.Leff * (Vgsteff + 2 * self.v_t(T))) 
         term2 = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff + 2 * self.v_t(T))
         Vdsat = term1 / term2
         
         return Vdsat
-    
+
+    def Vsat_T_dependent(self,T):
+        # Saturation velocity temperature dependence
+        v_sat = self.VSAT - self.At * (T / self.Tnom - 1)
+        return v_sat
+
     def calculate_Abulk(self, T):
         """Calculate bulk charge effect coefficient (Abulk) (Eq. 2.4.1).
         
@@ -392,7 +431,7 @@ class BSIM3v3_Model:
         Returns:
             float: Subthreshold drain current in amperes
         """
-        Vth     = self.calculate_V_th(Vds, Vbs, T)  
+        Vth     = self.vth_T_dependent(Vds, Vbs, T)  
         Vgst    = Vgs - Vth
         mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
         n       = 1 + (self.Cit + self.Citd * Vds + self.Citb * self.Vbseff) / self.Cox + self.Nfactor * self.epsSi / (self.Cox * self.Xdep)
@@ -413,7 +452,7 @@ class BSIM3v3_Model:
             float: Drain current in amperes
         """
         Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
-        Esat     = 2 * self.VSAT / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        Esat     = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
 
         mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
         Vb      = (Vgsteff + 2 * self.v_t(T)) / self.calculate_Abulk(T)
@@ -448,18 +487,32 @@ class BSIM3v3_Model:
         Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T)
         I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T) * Vdsat)
         # Calculate Early voltages
-        Esat     = 2 * self.VSAT / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
-        V_Asat      = (Esat * self.Leff + Vdsat + 2 * self.Rds * self.VSAT * self.Cox * self.Weff * Vgsteff * (1 - self.calculate_Abulk(T) * Vdsat / (2 * (Vgsteff + 2 * self.v_t(T))))) / (2/self.A2 - 1 + self.Rds * self.VSAT * self.Cox * self.Weff * self.calculate_Abulk(T))
+        Esat     = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        V_Asat      = (Esat * self.Leff + Vdsat + 2 * self.Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * Vgsteff * (1 - self.calculate_Abulk(T) * Vdsat / (2 * (Vgsteff + 2 * self.v_t(T))))) / (2/self.A2 - 1 + self.Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * self.calculate_Abulk(T))
         V_ACLM      = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T) * Esat * self.lit) * (Vds - Vdsat)
         theta_rout  = self.Pdiblc1 * (np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 2 * np.exp(-self.Drout * self.Leff / self.lit)) + self.Pdiblc2
         V_ADIBL     = (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * self.Vbseff)) * (1 - self.calculate_Abulk(T) * Vdsat / (self.calculate_Abulk(T) * Vdsat + Vgsteff + 2 * self.v_t(T)))
         V_A         = V_Asat + (1 + self.Pvag * Vgsteff / (Esat * self.Leff)) * (1 / V_ACLM + 1 / V_ADIBL)**-1
+        
         # Substrate current induced body effect
         V_ASCBE     = np.exp(self.Pscbe1 * self.lit / (Vds - Vdsat)) * self.Leff / self.Pscbe2
+        
         # Saturation current with all effects
         I_ds        = I_dsat * (1 + (Vds - Vdsat) / V_A) * (1 + (Vds - Vdsat) / V_ASCBE)
         return I_ds
     
+    def calculate_Rds(self, Vgs, Vbs, T):
+        """Calculate bias-dependent source/drain resistance."""
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
+        Rds         = self.Rdsw * (1 + self.Prwg * Vgsteff + self.Prwb*(np.sqrt(self.Phi_s(T)-Vbs) - np.sqrt(self.Phi_s(T))))/(1e6*self.Weff)**self.Wr
+        return Rds
+
+    def Rdsw_T_dependent(self, T):
+        """Calculate temperature-dependent source/drain resistance (Rdsw)."""
+        # Source/drain resistance temperature dependence
+        Rdsw = self.Rdsw + self.Pr * (T / self.Tnom - 1)
+        return Rdsw
+            
     def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
         """Calculate drain current for given bias conditions.
         
@@ -488,115 +541,311 @@ class BSIM3v3_Model:
                 I_ds = self.calculate_saturation_current(Vgs, Vdseff, Vbs, T)
         return I_ds
 #? -------------------------------------------------------------------------------
-
-
+import numpy as np
+import plotly.graph_objects as go
+import webbrowser
+import os
 
 if __name__ == "__main__":
     model = BSIM3v3_Model()
     
-    vds_range   = np.linspace(     0    ,    10, 50)      
-    vgs_range   = np.linspace(  -0.5    ,    10, 50)  
-    temp_range  = np.linspace(   250    ,   400, 50) 
-    Vds         = 0.1  
-    Vbs         = 0.0  
+    vds_range = np.linspace(0, 10, 50)
+    vgs_range = np.linspace(-0.5, 5, 50)
+    temp_range = np.linspace(250, 400, 50)
+    Vds = 0.1
+    Vbs = -3.3
 
+    # Create HTML file with all plots
+    html_file = "bsim3v3_plots.html"
+    
+    # Initialize HTML content
+    html_content = """
+    <html>
+    <head>
+        <title>BSIM3v3 Model Characterization</title>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <style>
+            .plot-container {
+                width: 100%;
+                margin-bottom: 50px;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 20px;
+            }
+            h2 {
+                color: #2c3e50;
+                font-family: Arial, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 style="text-align: center; font-family: Arial, sans-serif;">BSIM3v3 Model Characterization</h1>
+    """
+    
     # ------------------------------
     # Test 1: Vth vs Vds
-    vth_vds = [model.calculate_V_th(vds, 0, 400) for vds in vds_range]
-    
-    plt.figure(figsize=(10, 6))
-    plt.plot(vds_range, vth_vds)
-    plt.title('Threshold Voltage vs Drain-Source Voltage')
-    plt.xlabel('Vds (V)')
-    plt.ylabel('Vth (V)')
-    plt.grid(True)
-    plt.show()
+    vth_vds = [model.vth_T_dependent(vds, 0, 400) for vds in vds_range]
+    fig1 = go.Figure()
+    fig1.add_trace(go.Scatter(x=vds_range, y=vth_vds, name="Vth vs Vds"))
+    fig1.update_layout(
+        title="Threshold Voltage vs Drain-Source Voltage",
+        xaxis_title="Vds (V)",
+        yaxis_title="Vth (V)",
 
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Threshold Voltage vs Drain-Source Voltage</h2>
+        {div1}
+    </div>
+    """.format(div1=fig1.to_html(full_html=False, include_plotlyjs='cdn'))
+    
     # ------------------------------
-    # Test 2: Id vs Vgs for different Vds
-    plt.figure(figsize=(10, 6))
-    for vds in vds_range:
+    # Test 2: Id vs Vgs for different Vds (log scale)
+    fig2 = go.Figure()
+    for i, vds in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
         ids = [model.compute(vgs, vds) for vgs in vgs_range]
-        plt.plot(vgs_range, ids, label=f'Vds={vds}V')
-    
-    plt.title('Drain Current vs Gate-Source Voltage')
-    plt.xlabel('Vgs (V)')
-    plt.ylabel('Id (A)')
-    plt.grid(True)
-    plt.yscale('log')
-    plt.show()
+        fig2.add_trace(go.Scatter(
+            x=vgs_range, 
+            y=np.maximum(1e-20, ids),
+            name=f'Vds={vds:.1f}V',
+            mode='lines',
+            line=dict(width=2),
+            opacity=0.8
+        ))
+    fig2.update_layout(
+        title="Drain Current vs Gate-Source Voltage (log scale)",
+        xaxis_title="Vgs (V)",
+        yaxis_title="Id (A)",
+        yaxis_type="log",
 
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Drain Current vs Gate-Source Voltage (log scale)</h2>
+        {div2}
+    </div>
+    """.format(div2=fig2.to_html(full_html=False, include_plotlyjs='cdn'))
+    
     # ------------------------------
     # Test 3: Id vs Vds for different Vgs
-    plt.figure(figsize=(10, 6))
-    for vgs in vgs_range:
+    fig3 = go.Figure()
+    for i, vgs in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
         ids = [model.compute(vgs, vds) for vds in vds_range]
-        plt.plot(vds_range, ids, label=f'Vgs={vgs}V')
-    
-    plt.title('Drain Current vs Drain-Source Voltage')
-    plt.xlabel('Vds (V)')
-    plt.ylabel('Id (A)')
-    plt.grid(True)
-    plt.show()
+        fig3.add_trace(go.Scatter(
+            x=vds_range, 
+            y=ids,
+            name=f'Vgs={vgs:.1f}V',
+            mode='lines',
+            line=dict(width=2),
+            opacity=0.8
+        ))
+    fig3.update_layout(
+        title="Drain Current vs Drain-Source Voltage",
+        xaxis_title="Vds (V)",
+        yaxis_title="Id (A)",
 
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Drain Current vs Drain-Source Voltage</h2>
+        {div3}
+    </div>
+    """.format(div3=fig3.to_html(full_html=False, include_plotlyjs='cdn'))
+    
     # ------------------------------
     # Test 4: Vgsteff vs (Vgs-Vth)
-    vth = model.calculate_V_th(Vds, Vbs, 300)
+    vth = model.vth_T_dependent(Vds, Vbs, 300)
     vgsteff_values = []
     vgst_values = []
     
     for vgs in vgs_range:
-        Vth = model.calculate_V_th(Vds, Vbs, 300)
+        Vth = model.vth_T_dependent(Vds, Vbs, 300)
         vgst = vgs - Vth
         vgsteff = model.calculate_Vgsteff(vgs, 300, Vds, Vbs)
         vgsteff_values.append(vgsteff)
         vgst_values.append(vgst)
     
-    plt.figure(figsize=(10, 6))
-    plt.plot(vgst_values, vgsteff_values, label='Vgsteff')
-    plt.plot(vgst_values, vgst_values, '--', label='Ideal Vgsteff = Vgs-Vth')
-    plt.title('Effective Gate Overdrive Voltage vs (Vgs-Vth)')
-    plt.xlabel('Vgs - Vth (V)')
-    plt.ylabel('Vgsteff (V)')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    fig4 = go.Figure()
+    fig4.add_trace(go.Scatter(x=vgst_values, y=vgsteff_values, name="Vgsteff"))
+    fig4.add_trace(go.Scatter(x=vgst_values, y=vgst_values, name="Ideal", line=dict(dash='dash')))
+    fig4.update_layout(
+        title="Effective Gate Overdrive vs (Vgs-Vth)",
+        xaxis_title="Vgs - Vth (V)",
+        yaxis_title="Vgsteff (V)",
 
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Effective Gate Overdrive vs (Vgs-Vth)</h2>
+        {div4}
+    </div>
+    """.format(div4=fig4.to_html(full_html=False, include_plotlyjs='cdn'))
+    
     # ------------------------------
-    # Test 4 (log): log(Vgsteff) vs (Vgs-Vth)
-    plt.figure(figsize=(10, 6))
-    plt.plot(vgst_values, np.log10(np.maximum(1e-20, vgsteff_values)), label='log(Vgsteff)')
-    plt.axvline(x=0, color='gray', linestyle='--', label='Vgs=Vth')
-    plt.title('log(Effective Gate Overdrive) vs (Vgs-Vth)')
-    plt.xlabel('Vgs - Vth (V)')
-    plt.ylabel('log(Vgsteff) [log(V)]')
-    plt.legend()
-    plt.grid(True, which='both')
-    plt.show()
+    # Test 5: log(Vgsteff) vs (Vgs-Vth)
+    fig5 = go.Figure()
+    fig5.add_trace(go.Scatter(
+        x=vgst_values, 
+        y=np.log10(np.maximum(1e-20, vgsteff_values)),
+        name="log(Vgsteff)",
+        mode='lines'
+    ))
+    fig5.add_shape(
+        type="line",
+        x0=0, y0=-20, x1=0, y1=5,
+        line=dict(color="gray", width=1, dash="dash")
+    )
+    fig5.update_layout(
+        title="log(Effective Gate Overdrive) vs (Vgs-Vth)",
+        xaxis_title="Vgs - Vth (V)",
+        yaxis_title="log(Vgsteff) [log(V)]",
 
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>log(Effective Gate Overdrive) vs (Vgs-Vth)</h2>
+        {div5}
+    </div>
+    """.format(div5=fig5.to_html(full_html=False, include_plotlyjs='cdn'))
+    
     # ------------------------------
-    # Test 5: Id vs Temperature for different Vgs
-    plt.figure(figsize=(10, 6))
-    for vgs in vgs_range:
+    # Test 6: Id vs Temperature for different Vgs
+    fig6 = go.Figure()
+    for i, vgs in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
         ids = [model.compute(vgs, Vds, Vbs, T) for T in temp_range]
-        plt.plot(temp_range, ids, label=f'Vgs={vgs}V')
-    
-    plt.title('Drain Current vs Temperature')
-    plt.xlabel('Temperature (K)')
-    plt.ylabel('Id (A)')
-    # plt.legend()
-    plt.grid(True)
-    plt.show()
+        fig6.add_trace(go.Scatter(
+            x=temp_range, 
+            y=ids,
+            name=f'Vgs={vgs:.1f}V',
+            mode='lines',
+            line=dict(width=2),
+            opacity=0.8
+        ))
+    fig6.update_layout(
+        title="Drain Current vs Temperature",
+        xaxis_title="Temperature (K)",
+        yaxis_title="Id (A)",
 
-        # ------------------------------
-    # Test 6: Mobility vs Temperature for different Vgs
-    plt.figure(figsize=(10, 6))
-    for vgs in vgs_range:  # Selected Vgs values to show different curves
-        mobilities = [model.calculate_mobility(vgs, T, Vds, Vbs) for T in temp_range]
-        plt.plot(temp_range, mobilities, label=f'Vgs={vgs}V')
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Drain Current vs Temperature</h2>
+        {div6}
+    </div>
+    """.format(div6=fig6.to_html(full_html=False, include_plotlyjs='cdn'))
     
-    plt.title('Effective Mobility vs Temperature')
-    plt.xlabel('Temperature (K)')
-    plt.ylabel('Mobility (m²/V·s)')
-    plt.grid(True)
-    plt.show()
+    # ------------------------------
+    # Test 7: Mobility vs Temperature for different Vgs
+    fig7 = go.Figure()
+    for i, vgs in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
+        mobilities = [model.calculate_mobility(vgs, T, Vds, Vbs) for T in temp_range]
+        fig7.add_trace(go.Scatter(
+            x=temp_range, 
+            y=mobilities,
+            name=f'Vgs={vgs:.1f}V',
+            mode='lines',
+            line=dict(width=2),
+            opacity=0.8
+        ))
+    fig7.update_layout(
+        title="Effective Mobility vs Temperature",
+        xaxis_title="Temperature (K)",
+        yaxis_title="Mobility (m²/V·s)",
+
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Effective Mobility vs Temperature</h2>
+        {div7}
+    </div>
+    """.format(div7=fig7.to_html(full_html=False, include_plotlyjs='cdn'))
+    
+    # ------------------------------
+    # Test 8-9: Vdseff vs Vds
+    original_delta = model.delta
+    
+    # Test 8: Vdseff vs Vds for different Vgs values
+    fig8 = go.Figure()
+    for vgs in [1, 3, 5]:
+        vdseff_values = [model.calculate_Vdseff(vds, vgs, Vbs, 300) for vds in vds_range]
+        fig8.add_trace(go.Scatter(
+            x=vds_range,
+            y=vdseff_values,
+            name=f'Vgs={vgs}V',
+            mode='lines'
+        ))
+        vdsat = model.calculate_Vdsat(vgs, Vbs, 300, Vds)
+        fig8.add_vline(
+            x=vdsat,
+            line=dict(color="gray", width=1, dash="dash"),
+            opacity=0.3
+        )
+    
+    fig8.add_trace(go.Scatter(
+        x=vds_range,
+        y=vds_range,
+        name='Ideal',
+        line=dict(color="black", dash="dash")
+    ))
+    fig8.update_layout(
+        title="Vdseff vs Vds (Varying Vgs)",
+        xaxis_title="Vds (V)",
+        yaxis_title="Vdseff (V)",
+
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Vdseff vs Vds (Varying Vgs)</h2>
+        {div8}
+    </div>
+    """.format(div8=fig8.to_html(full_html=False, include_plotlyjs='cdn'))
+    
+    # Test 9: Vdseff vs Vds for different delta values
+    fig9 = go.Figure()
+    for delta in [0.001, 0.01, 0.05]:
+        model.delta = delta
+        vdseff_values = [model.calculate_Vdseff(vds, 1.0, Vbs, 300) for vds in vds_range]
+        fig9.add_trace(go.Scatter(
+            x=vds_range,
+            y=vdseff_values,
+            name=f'delta={delta}',
+            mode='lines'
+        ))
+    
+    model.delta = original_delta
+    vdsat = model.calculate_Vdsat(1.0, Vbs, 300, Vds)
+    fig9.add_vline(
+        x=vdsat,
+        line=dict(color="gray", width=1, dash="dash")
+    )
+    fig9.add_trace(go.Scatter(
+        x=vds_range,
+        y=vds_range,
+        name='Ideal',
+        line=dict(color="black", dash="dash")
+    ))
+    fig9.update_layout(
+        title="Vdseff vs Vds (Varying delta)",
+        xaxis_title="Vds (V)",
+        yaxis_title="Vdseff (V)",
+
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Vdseff vs Vds (Varying delta)</h2>
+        {div9}
+    </div>
+    """.format(div9=fig9.to_html(full_html=False, include_plotlyjs='cdn'))
+    
+    # Close HTML tags
+    html_content += """
+    </body>
+    </html>
+    """
+    
+    # Save HTML file
+    with open(html_file, 'w') as f:
+        f.write(html_content)
+    
+    # Open in default browser
+    webbrowser.open('file://' + os.path.realpath(html_file))

@@ -1,17 +1,59 @@
 #!/usr/bin/env python
 # coding=utf-8
+#? -------------------------------------------------------------------------------
+#?
+#?                 ______  ____  _______  _____
+#?                / __ \ \/ /  |/  / __ \/ ___/
+#?               / /_/ /\  / /|_/ / / / /\__ \
+#?              / ____/ / / /  / / /_/ /___/ /
+#?             /_/     /_/_/  /_/\____//____/
+#?
+#? Name:        BSIM3v3_2.py
+#? Purpose:     Compute drain current using the BSIM model
+#?
+#? Author:      Mohamed Gueni (mohamedgueni@outlook.com)
+#? Based on:    BSIM3v3_2 Manual 
+#? Created:     21/05/2025
+#? Licence:     Refer to the LICENSE file
+#? -------------------------------------------------------------------------------
 from matplotlib import pyplot as plt
 import numpy as np
-
+#? -------------------------------------------------------------------------------
 class BSIM3v3_Model:
-    """BSIM3v3 MOSFET model with simplified intermediate calculations."""
+    """BSIM3v3 MOSFET model implementation for circuit simulation.
+    
+    This class implements the BSIM3v3 (Berkeley Short-channel IGFET Model) version 3.3
+    for MOSFET transistors. It calculates drain current (Ids) and other characteristics
+    based on the given terminal voltages and physical parameters.
+    
+    The model includes:
+    - Threshold voltage calculation with short-channel, narrow width, and DIBL effects
+    - Mobility degradation effects
+    - Velocity saturation
+    - Channel length modulation
+    - Subthreshold conduction
+    - Temperature effects
+    - Parasitic resistance effects
+    
+    Attributes:
+        Various physical constants and model parameters initialized in __init__
+    """
     
     def __init__(self):
+        """Initialize BSIM3v3 model with default parameters for 180nm NMOS transistor.
+        
+        Sets up:
+        - Physical constants (permittivity, charge, etc.)
+        - Threshold voltage related parameters
+        - Mobility parameters
+        - Velocity saturation parameters
+        - Output resistance parameters
+        - Geometry parameters
+        - Doping concentrations
+        - Temperature parameters
+        - Subthreshold parameters
+        """
         # Physical constants (SI units)
-        self.epsSi = 11.7 * 8.854e-12      # F/m, Silicon permittivity
-        self.epsOx = 3.9 * 8.854e-12       # F/m, Silicon dioxide permittivity
-        self.q = 1.602e-19                 # C, Electron charge
-        self.k_B = 1.38e-23                # J/K, Boltzmann constant
         self.epsSi    = 11.7 * 8.854e-12            # F/m,   Silicon permittivity
         self.epsOx    = 3.9 * 8.854e-12             # F/m,   Silicon dioxide permittivity
         self.q        = 1.602e-19                   # C,     Electron charge
@@ -64,8 +106,8 @@ class BSIM3v3_Model:
         self.Ldrawn   = 180e-9                      # m,     Drawn channel length
         self.Wdrawn   = 1e-6                        # m,     Drawn channel width
         self.Xj       = 100e-9                      # m,     Junction depth
-        self.Tox      = 2.0e-9                      # m,     Oxide thickness
-        self.Toxm     = 2.0e-9                      # m,     Oxide thickness for modeling
+        self.Tox      = 1.0e-9                      # m,     Oxide thickness
+        self.Toxm     = 1.0e-9                      # m,     Oxide thickness for modeling
         # Doping concentrations
         self.Nch      = 1.0e23                      # m-3,   Channel doping concentration
         self.Ngate    = 1e25                        # m-3,   Poly doping concentration
@@ -99,111 +141,390 @@ class BSIM3v3_Model:
         self.Cdsc     = 0                       # Axial capacitance (F)
         self.Cdscd    = 0                       # Drain-bias sensitivity of Cdsc F/Vm2
         self.Cdscb    = 0                       # Body-bias sensitivity of Cdsc F/Vm2
-        # Model parameters for 180nm NMOS
-        self.Vth0 = 0.40                   # V, Zero-bias threshold voltage
-        self.K1 = 0.5                      # √V, First body effect coefficient
-        self.K2 = 0.01                     # -, Second body effect coefficient
-        self.K3 = 80.0                     # -, Narrow width effect coefficient
-        self.K3b = 0                       # -, Body effect on narrow width coefficient
-        self.Dvt0 = 2.2                    # -, Short-channel effect coefficient
-        self.Dvt1 = 0.53                   # -, Short-channel effect coefficient
-        self.Dvt2 = -0.032                 # 1/V, Short-channel effect coefficient
-        self.Dvt0w = 0.0                   # -, Narrow width effect coefficient
-        self.Dvt1w = 5.3e6                 # -, Narrow width effect coefficient
-        self.Dvt2w = -0.032                # 1/V, Narrow width effect coefficient
-        self.Nlx = 1.47e-7                 # m, Lateral non-uniform doping parameter
-        self.W0 = 2.5e-6                  # m, Narrow width parameter
-        self.U0 = 0.067                    # m²/V·s, Low-field mobility
-        self.VSAT = 8.0e4                  # m/s, Saturation velocity
-        self.A0 = 1.0                      # -, Bulk charge effect coefficient
-        self.Pclm = 1.3                    # -, Channel length modulation coefficient
-        self.Pdiblc1 = 0.5                 # -, DIBL coefficient
-        self.Pdiblc2 = 0.39                # -, DIBL coefficient
-        self.Drout = 0.56                  # -, Output resistance DIBL coefficient
-        self.Leff = 180e-9                 # m, Effective channel length
-        self.Weff = 1e-6                   # m, Effective channel width
-        self.Tox = 2.0e-9                  # m, Oxide thickness
-        self.Toxm = 2.0e-9                 # m, Oxide thickness for modeling
-        self.Nch = 1.0e23                  # m⁻³, Channel doping concentration
-        self.Nds = 1e26                    # m⁻³, Source/drain doping
-        self.Rds = 50.0                    # Ω, Source-drain resistance
-        self.n = 1.5                       # -, Subthreshold swing coefficient
-        self.Voff = -0.08                  # V, Offset voltage for subthreshold
-        self.Tnom = 300.0                  # K, Nominal temperature
-        self.Kt1 = -0.15                   # V, Temperature coefficient for Vth
-        self.Kt1l = 1e-9                   # V·m, Temperature coefficient for Vth
-        self.Kt2 = 0.03                    # -, Temperature coefficient for Vth
+
+    def ni(self, T):
+        """Calculate intrinsic carrier concentration (ni) based on temperature.
         
-        # Pre-calculated constant values (originally from functions)
-        self.Phi_s = 0.9                   # V, Surface potential (fixed)
-        self.Xdep = 1e-7                   # m, Depletion width (fixed)
-        self.Xdep0 = 1e-7                  # m, Zero-bias depletion width (fixed)
-        self.Vbi = 1.0                     # V, Built-in potential (fixed)
-        self.ni = 1.45e16                  # m⁻³, Intrinsic carrier concentration (fixed)
-        self.v_t = 0.026                   # V, Thermal voltage at 300K (fixed)
-        self.Abulk = 1.1                    # -, Bulk charge effect coefficient (fixed)
-        self.Vgsteff = 0.5                  # V, Effective gate overdrive (fixed)
-        self.Vdsat = 0.5                    # V, Saturation voltage (fixed)
-        self.Vdseff = 0.5                   # V, Effective drain voltage (fixed)
-        self.mob_eff = 0.05                 # m²/V·s, Effective mobility (fixed)
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Intrinsic carrier concentration in m^-3
+        """
+        ni = self.NI0 * (T / self.Tnom) ** self.NITEXP
+        return ni
+    
+    def v_t(self, T):
+        """Calculate thermal voltage (Vt) based on temperature.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Thermal voltage in volts
+        """
+        return self.k_B * T / self.q
+    
+    def Phi_s(self, T):
+        """Calculate surface potential (Phi_s) based on temperature.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Surface potential in volts
+        """
+        Phi_s = 2 * self.v_t(T) * np.log(self.Nch / self.ni(T))
+        return Phi_s
+    
+    def Xdep0(self, T):
+        """Calculate zero-bias depletion width based on temperature.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Zero-bias depletion width in meters
+        """
+        Xdep0 = np.sqrt(2 * self.epsSi * self.Phi_s(T) / (self.q * self.Nch))
+        return Xdep0
+        
+    def Vbi(self, T):
+        """Calculate built-in potential (Vbi) based on temperature.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Built-in potential in volts
+        """
+        vbi = self.v_t(T) * np.log((self.Nch * self.Nds) / np.square(self.ni(T)))
+        return vbi
 
     def calculate_V_th(self, Vds, Vbs, T):
-        """Calculate threshold voltage (Vth) with simplified intermediate calculations."""
-        # Temperature effect
-        delta_T = (T / self.Tnom) - 1
-        temp_effect = (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * Vbs) * delta_T
+        """Calculate threshold voltage (Vth) based on BSIM3v3 model (Eq. 2.1.25).
         
-        # Body effect
-        body_effect = self.K1 * np.sqrt(self.Phi_s - Vbs) - self.K2 * Vbs
+        Includes:
+        - Body effect
+        - Short-channel effects
+        - Narrow width effects
+        - DIBL effects
+        - Temperature effects
         
-        # Short-channel effects
-        sc_effect = -self.Dvt0 * np.exp(-self.Dvt1 * self.Leff/(2*1e-7)) * (self.Vbi - self.Phi_s)
-        
-        # Narrow width effect
-        nw_effect = (self.K3 + self.K3b * Vbs) * (self.Tox/(self.Weff + self.W0)) * self.Phi_s
-        
-        # DIBL effect
-        dibl_effect = -(self.Eta0 + self.Etab * Vbs) * Vds
-        
-        # Combine all effects
-        Vth = self.Vth0 + body_effect + sc_effect + nw_effect + dibl_effect + temp_effect
+        Args:
+            Vds (float): Drain-source voltage in volts
+            Vbs (float): Bulk-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Threshold voltage in volts
+        """
+        # Effective body-source voltage with smoothing (Eq. 2.1.26)
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        self.Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        # Depletion widths and characteristic lengths
+        self.Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - self.Vbseff) / (self.q * self.Nch))
+        lt0         = np.sqrt(self.epsSi * self.Xdep * self.Tox / self.epsOx)
+        ltw         = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2w * self.Vbseff)))
+        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * self.Vbseff)))
+        # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
+        K1ox        = self.K1 * (self.Tox / self.Toxm)
+        K2ox        = self.K2 * (self.Tox / self.Toxm)
+        Vth0ox      = self.Vth0 - K1ox * np.sqrt(self.Phi_s(T))
+        # Calculate all terms of threshold voltage (Eq. 2.1.25)
+        term1       = Vth0ox + K1ox * np.sqrt(self.Phi_s(T) - self.Vbseff) - K2ox * self.Vbseff
+        term2       = K1ox * (np.sqrt(1 + self.Nlx/self.Leff) - 1) * np.sqrt(self.Phi_s(T))
+        term3       = (self.K3 + self.K3b * self.Vbseff) * (self.Tox / (self.Weff + self.W0)) * self.Phi_s(T)
+        term4       = -self.Dvt0w * (np.exp(-self.Dvt1w * self.Weff * self.Leff/(2 * ltw)) + 2 * np.exp(-self.Dvt1w * self.Weff * self.Leff/ltw)) * (self.Vbi(T) - self.Phi_s(T))
+        term5       = -self.Dvt0 * (np.exp(-self.Dvt1 * self.Leff/(2 * lt)) + 2 * np.exp(-self.Dvt1 * self.Leff/lt)) * (self.Vbi(T) - self.Phi_s(T))
+        term6       = -(np.exp(-self.Dsub * self.Leff/(2 * lt0)) + 2 * np.exp(-self.Dsub * self.Leff/lt0)) * (self.Eta0 + self.Etab * self.Vbseff) * Vds
+        # Temperature effect on threshold voltage
+        delta_T     = (T / self.Tnom) - 1
+        term7       = (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * self.Vbseff) * delta_T
+        Vth    = term1 + term2 + term3 + term4 + term5 + term6 + term7
+        #print(f"Vth: {Vth}, Vbseff: {self.Vbseff}, Xdep: {self.Xdep}, Tox: {self.Tox}, Toxm: {self.Toxm}")
         return Vth
+    
+    def calculate_mobility(self, Vgs, T,Vds, Vbs):
+        """Calculate effective mobility including degradation effects (Eq. 3.2.1-3.2.3).
+        
+        Includes:
+        - Vertical field mobility degradation
+        - Temperature effects
+        - Body effect on mobility
+        
+        Args:
+            Vgs (float): Gate-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Effective mobility in m²/V·s
+        """
+        Vth         = self.calculate_V_th(Vds, Vbs, T)  
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  
+        mob_temp    = self.U0 * (T/self.Tnom)**self.Ute # Temperature effect on mobility
+        
+        # Mobility degradation models
+        if self.mobMod == 1:
+            # Vertical field mobility degradation model (Eq. 3.2.1)
+            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *             \
+                    ((Vgsteff + 2*Vth)/self.Tox) +                      \
+                    self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)
+            
+        elif self.mobMod == 2:  # To account for depletion mode devices, another mobility model option is given by the following
+            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *             \
+                    (Vgsteff/self.Tox) +                                \
+                    self.Ub * np.square(Vgsteff/self.Tox)
+        else:  # To consider the body bias dependence of Eq. 3.2.1 further, we have introduced the following expression
+            denom = 1 + (self.Ua * ((Vgsteff + 2*Vth)/self.Tox) +       \
+                    self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)) *  \
+                    (1 + self.Uc * self.Vbseff)
+       
+        mob_eff   = mob_temp / denom
+        # print(f"Vgs: {Vgs}, Vbs: {Vbs}, T: {T}, Vgsteff: {Vgsteff}, Vth: {Vth}, mob_eff: {mob_eff}")
+        return mob_eff
+    
+    def calculate_Vgsteff(self, Vgs,T,Vds, Vbs):
+        """Calculate effective Vgs-Vth including subthreshold smoothing (Eq. 3.1.3).
+        
+        Provides smooth transition between subthreshold and strong inversion regions.
+        
+        Args:
+            Vgs (float): Gate-source voltage in volts
+            Vbs (float): Bulk-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Effective gate overdrive voltage in volts
+        """
 
-    def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
-        """Calculate drain current with simplified intermediate calculations."""
-        Vth = self.calculate_V_th(Vds, Vbs, T)
-        Vgst = Vgs - Vth
+        # Effective body-source voltage with smoothing (Eq. 2.1.26)
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Cd = self.epsSi / self.Xdep0(T)
+        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * self.Vbseff)))
+        # Calculate the exponential terms
+        term1 = np.exp(-self.Dvt1 * self.Leff / (2 * lt))
+        term2 = np.exp(-self.Dvt1 * self.Leff / (lt))
         
-        # Subthreshold region
-        if Vgst <= 0:
-            I_ds = (self.U0 * self.Cox * self.Weff/self.Leff * 
-                   np.square(self.v_t) * np.exp((Vgst - self.Voff)/(self.n * self.v_t))) * (1 - np.exp(-Vds/self.v_t))
+        # Calculate the main equation
+        n = 1 + self.Nfactor * (Cd/self.Cox) + \
+            ((self.Cdsc+self.Cdscd*Vds+self.Cdscb*Vbseff) *(term1+2*term2))/self.Cox +\
+            self.Cit/self.Cox
         
-        # Linear region
-        elif Vds < self.Vdsat:
-            I_dso = (self.U0 * self.Cox * (self.Weff/self.Leff) * 
-                    Vgst * Vds * (1 - Vds/(2 * self.Abulk * (Vgst + 2*self.v_t))))
-            I_ds = I_dso / (1 + self.Rds * I_dso / max(1e-6, Vds))
+        Vth             = self.calculate_V_th(Vds, Vbs, T)  
+        Vgst            = Vgs - Vth
+        nom             = 2 * n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * n * self.v_t(T))))
+        denom           = 1 + 2 * n * self.Cox * \
+                          np.sqrt(2 * self.Phi_s(T) / (self.q * self.epsSi * self.Nch)) * \
+                          np.exp(-(Vgst - 2 * self.Voff) / (2 * n * self.v_t(T)))
+        Vgsteff         = nom / denom
+        return Vgsteff
+
+    def calculate_Vdsat(self, Vgs, Vbs, T,Vds):
+        """Calculate saturation voltage (Vdsat) (Eq. 3.4.3).
         
-        # Saturation region
+        The voltage at which the channel reaches velocity saturation.
+        
+        Args:
+            Vgs (float): Gate-source voltage in volts
+            Vbs (float): Bulk-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Saturation voltage in volts
+        """
+        Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        Esat     = 2 * self.VSAT / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        term1 = (Esat * self.Leff * (Vgsteff + 2 * self.v_t(T))) 
+        term2 = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff + 2 * self.v_t(T))
+        Vdsat = term1 / term2
+        
+        return Vdsat
+    
+    def calculate_Abulk(self, T):
+        """Calculate bulk charge effect coefficient (Abulk) (Eq. 2.4.1).
+        
+        Accounts for non-uniform channel doping effects on threshold voltage.
+        
+        Args:
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Bulk charge effect coefficient (unitless)
+        """
+        # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
+        K1ox        = self.K1 * (self.Tox / self.Toxm)
+        term1       = 1 + (K1ox / (2 * np.sqrt(self.Phi_s(T) - self.Vbseff))) * (self.A0 * self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))) * (1 - self.Ags * np.square(self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))))
+        term2       = (self.B0 / (self.Weff + self.B1)) / (1 + self.Keta * self.Vbseff)
+        self.Abulk  = term1 + term2
+        return self.Abulk
+    
+    def calculate_Vdseff(self, Vds, Vgs, Vbs, T):
+        """Calculate effective Vds including smoothing at Vdsat (Eq. 3.6.4).
+        
+        Provides smooth transition between linear and saturation regions.
+        
+        Args:
+            Vds (float): Drain-source voltage in volts
+            Vgs (float): Gate-source voltage in volts
+            Vbs (float): Bulk-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Effective drain-source voltage in volts
+        """
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T,Vds)
+        Vdext       = Vdsat - 0.5 * (Vdsat - Vds - self.delta + np.sqrt(np.square(Vdsat - Vds - self.delta) + 4 * self.delta * Vdsat))
+        Vdseff = Vdext - 0.5 * (Vdext - Vds - self.delta + np.sqrt(np.square(Vdext - Vds - self.delta) + 4 * self.delta * Vdext))
+        return Vdseff
+    
+    def calculate_subthreshold_current(self,Vgs, Vds, T, Vbs, Vth, vt, phi_s, mob_eff):
+        """Calculate subthreshold current (Eq. 2.7.1).
+        
+        Models the current when Vgs < Vth (weak inversion region).
+        
+        Args:
+            Vgs (float): Gate-source voltage in volts
+            Vds (float): Drain-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Subthreshold drain current in amperes
+        """
+        Vgst    = Vgs - Vth
+        n       = 1 + (self.Cit + self.Citd * Vds + self.Citb * self.Vbseff) / self.Cox + self.Nfactor * self.epsSi / (self.Cox * self.Xdep)
+        I_s0    = mob_eff * (self.Weff / self.Leff) * np.sqrt(self.q * self.epsSi * self.Nch * np.square(self.v_t(T)) / (2 * self.Phi_s(T)))
+        I_sub   = I_s0 * (1 - np.exp(-Vds / self.v_t(T))) * np.exp((Vgst - self.Voff) / (n * self.v_t(T)))
+        return I_sub
+    
+    def calculate_linear_current(self, Vds,Vgs, T,Vbs):
+        """Calculate linear region current (triode region) (Eq. 3.3.4).
+        
+        Models the current when Vds < Vdsat.
+        
+        Args:
+            Vds (float): Drain-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Drain current in amperes
+        """
+        Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        Esat     = 2 * self.VSAT / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+
+        mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
+        Vb      = (Vgsteff + 2 * self.v_t(T)) / self.calculate_Abulk(T)
+        I_dso   = mob_eff * self.Cox * (self.Weff / self.Leff) * Vgsteff * Vds * (1 - Vds / (2 * Vb)) / (1 + Vds / (Esat * self.Leff))
+        # Add source-drain resistance effect (Eq. 3.3.5)
+        if Vds == 0:
+            # Handle the case where Vds is zero (maybe return 0 or a small value)
+            I_ds = 0
         else:
-            I_dsat = (self.Weff * self.VSAT * self.Cox * 
-                     (Vgst - self.Abulk * self.Vdsat))
-            I_ds = I_dsat * (1 + (Vds - self.Vdsat)/5.0)  # Simplified CLM effect
+            I_ds = I_dso / (1 + self.Rds * I_dso / Vds) #Extrinsic Case (Rds > 0)
+        return I_ds
+    
+    def calculate_saturation_current(self, Vgs, Vds, Vbs, T):
+        """Calculate saturation region current (Eq. 3.5.1).
+        
+        Models the current when Vds > Vdsat, including:
+        - Channel length modulation
+        - DIBL effects
+        - Substrate current induced body effect
+        
+        Args:
+            Vgs (float): Gate-source voltage in volts
+            Vds (float): Drain-source voltage in volts
+            Vbs (float): Bulk-source voltage in volts
+            T (float): Temperature in Kelvin
+            
+        Returns:
+            float: Drain current in amperes
+        """
+        Vgsteff = self.calculate_Vgsteff(Vgs, T)
+        self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T)
+        I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T) * Vdsat)
+        # Calculate Early voltages
+        Esat     = 2 * self.VSAT / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        V_Asat      = (Esat * self.Leff + Vdsat + 2 * self.Rds * self.VSAT * self.Cox * self.Weff * Vgsteff * (1 - self.calculate_Abulk(T) * Vdsat / (2 * (Vgsteff + 2 * self.v_t(T))))) / (2/self.A2 - 1 + self.Rds * self.VSAT * self.Cox * self.Weff * self.calculate_Abulk(T))
+        V_ACLM      = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T) * Esat * self.lit) * (Vds - Vdsat)
+        theta_rout  = self.Pdiblc1 * (np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 2 * np.exp(-self.Drout * self.Leff / self.lit)) + self.Pdiblc2
+        V_ADIBL     = (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * self.Vbseff)) * (1 - self.calculate_Abulk(T) * Vdsat / (self.calculate_Abulk(T) * Vdsat + Vgsteff + 2 * self.v_t(T)))
+        V_A         = V_Asat + (1 + self.Pvag * Vgsteff / (Esat * self.Leff)) * (1 / V_ACLM + 1 / V_ADIBL)**-1
+        
+        # Substrate current induced body effect
+        V_ASCBE     = np.exp(self.Pscbe1 * self.lit / (Vds - Vdsat)) * self.Leff / self.Pscbe2
+        
+        # Saturation current with all effects
+        I_ds        = I_dsat * (1 + (Vds - Vdsat) / V_A) * (1 + (Vds - Vdsat) / V_ASCBE)
+        return I_ds
+    
+    def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
+        """Optimized calculation of drain current with reduced redundant calculations."""
+        # Calculate frequently used parameters once
+        vt = self.v_t(T)
+        phi_s = self.Phi_s(T)
+        
+        # Calculate Vbseff once
+        Vbc = 0.9 * (phi_s - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + 
+                             np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        
+        # Calculate threshold voltage once
+        Vth = self.calculate_V_th(Vds, Vbs, T)
+        
+        # Calculate Vgsteff once
+        Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs, Vth, Vbseff, vt, phi_s)
+        
+        # Calculate mobility once
+        mob_eff = self.calculate_mobility(Vgs, T, Vds, Vbs, Vth, Vgsteff)
+        
+        # Calculate Vdsat once
+        Vdsat = self.calculate_Vdsat(Vgsteff, Vbs, T, Vds, mob_eff, vt)
+        
+        # Calculate effective Vds once
+        Vdseff = self.calculate_Vdseff(Vds, Vgs, Vbs, T, Vdsat)
+        
+        # Determine operating region and calculate current
+        if Vgsteff <= 0:  # Subthreshold region
+            I_ds = self.calculate_subthreshold_current(Vgs, Vds, T, Vbs, Vth, vt, phi_s, mob_eff)
+        else:
+            if Vdseff < Vdsat:  # Linear region
+                I_ds = self.calculate_linear_current(Vdseff, Vgs, T, Vbs, mob_eff, Vgsteff, vt)
+            else:  # Saturation region
+                I_ds = self.calculate_saturation_current(Vgs, Vdseff, Vbs, T, Vgsteff, Vdsat, mob_eff, vt)
         
         return I_ds
+#? -------------------------------------------------------------------------------
+
 
 
 if __name__ == "__main__":
     model = BSIM3v3_Model()
     
-    # Test parameters
-    vds_range = np.linspace(0, 1.0, 50)
-    vgs_range = np.linspace(0, 1.0, 50)
+    vds_range   = np.linspace(     0    ,    5, 50)      
+    vgs_range   = np.linspace(  -0.5    ,    5, 50)  
+    temp_range  = np.linspace(   250    ,   400, 50) 
+    Vds         = 0.1  
+    Vbs         = 0.0  
+
+    # ------------------------------
+    # Test 1: Vth vs Vds
+    vth_vds = [model.calculate_V_th(vds, 0, 400) for vds in vds_range]
     
-    # Test 1: Id vs Vgs for different Vds
     plt.figure(figsize=(10, 6))
-    for vds in [0.1, 0.5, 1.0]:
+    plt.plot(vds_range, vth_vds)
+    plt.title('Threshold Voltage vs Drain-Source Voltage')
+    plt.xlabel('Vds (V)')
+    plt.ylabel('Vth (V)')
+    plt.grid(True)
+    plt.show()
+
+    # ------------------------------
+    # Test 2: Id vs Vgs for different Vds
+    plt.figure(figsize=(10, 6))
+    for vds in vds_range:
         ids = [model.compute(vgs, vds) for vgs in vgs_range]
         plt.plot(vgs_range, ids, label=f'Vds={vds}V')
     
@@ -211,12 +532,13 @@ if __name__ == "__main__":
     plt.xlabel('Vgs (V)')
     plt.ylabel('Id (A)')
     plt.grid(True)
-    plt.legend()
+    plt.yscale('log')
     plt.show()
 
-    # Test 2: Id vs Vds for different Vgs
+    # ------------------------------
+    # Test 3: Id vs Vds for different Vgs
     plt.figure(figsize=(10, 6))
-    for vgs in [0.3, 0.5, 0.7, 1.0]:
+    for vgs in vgs_range:
         ids = [model.compute(vgs, vds) for vds in vds_range]
         plt.plot(vds_range, ids, label=f'Vgs={vgs}V')
     
@@ -224,15 +546,105 @@ if __name__ == "__main__":
     plt.xlabel('Vds (V)')
     plt.ylabel('Id (A)')
     plt.grid(True)
-    plt.legend()
     plt.show()
 
-    # Test 3: Vth vs Vds
-    vth_vds = [model.calculate_V_th(vds, 0, 300) for vds in vds_range]
+    # ------------------------------
+    # Test 4: Vgsteff vs (Vgs-Vth)
+    vth = model.calculate_V_th(Vds, Vbs, 300)
+    vgsteff_values = []
+    vgst_values = []
+    
+    for vgs in vgs_range:
+        Vth = model.calculate_V_th(Vds, Vbs, 300)
+        vgst = vgs - Vth
+        vgsteff = model.calculate_Vgsteff(vgs, 300, Vds, Vbs)
+        vgsteff_values.append(vgsteff)
+        vgst_values.append(vgst)
+    
     plt.figure(figsize=(10, 6))
-    plt.plot(vds_range, vth_vds)
-    plt.title('Threshold Voltage vs Drain-Source Voltage')
+    plt.plot(vgst_values, vgsteff_values, label='Vgsteff')
+    plt.plot(vgst_values, vgst_values, '--', label='Ideal Vgsteff = Vgs-Vth')
+    plt.title('Effective Gate Overdrive Voltage vs (Vgs-Vth)')
+    plt.xlabel('Vgs - Vth (V)')
+    plt.ylabel('Vgsteff (V)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # ------------------------------
+    # Test 4 (log): log(Vgsteff) vs (Vgs-Vth)
+    plt.figure(figsize=(10, 6))
+    plt.plot(vgst_values, np.log10(np.maximum(1e-20, vgsteff_values)), label='log(Vgsteff)')
+    plt.axvline(x=0, color='gray', linestyle='--', label='Vgs=Vth')
+    plt.title('log(Effective Gate Overdrive) vs (Vgs-Vth)')
+    plt.xlabel('Vgs - Vth (V)')
+    plt.ylabel('log(Vgsteff) [log(V)]')
+    plt.legend()
+    plt.grid(True, which='both')
+    plt.show()
+
+    # ------------------------------
+    # Test 5: Id vs Temperature for different Vgs
+    plt.figure(figsize=(10, 6))
+    for vgs in vgs_range:
+        ids = [model.compute(vgs, Vds, Vbs, T) for T in temp_range]
+        plt.plot(temp_range, ids, label=f'Vgs={vgs}V')
+    
+    plt.title('Drain Current vs Temperature')
+    plt.xlabel('Temperature (K)')
+    plt.ylabel('Id (A)')
+    # plt.legend()
+    plt.grid(True)
+    plt.show()
+
+        # ------------------------------
+    # Test 6: Mobility vs Temperature for different Vgs
+    plt.figure(figsize=(10, 6))
+    for vgs in vgs_range:  # Selected Vgs values to show different curves
+        mobilities = [model.calculate_mobility(vgs, T, Vds, Vbs) for T in temp_range]
+        plt.plot(temp_range, mobilities, label=f'Vgs={vgs}V')
+    
+    plt.title('Effective Mobility vs Temperature')
+    plt.xlabel('Temperature (K)')
+    plt.ylabel('Mobility (m²/V·s)')
+    plt.grid(True)
+    plt.show()
+
+        # ------------------------------
+    # Test 7: Vdseff vs Vds for different Vgs values
+    plt.figure(figsize=(10, 6))
+    for vgs in [1,3,5]:  # Selected Vgs values to show different curves
+        vdseff_values = [model.calculate_Vdseff(vds, vgs, Vbs, 300) for vds in vds_range]
+        plt.plot(vds_range, vdseff_values, label=f'Vgs={vgs}V')
+        # Also plot Vdsat for reference
+        vdsat = model.calculate_Vdsat(vgs, Vbs, 300, vds)
+        plt.axvline(x=vdsat, color='gray', linestyle='--', alpha=0.3)
+    
+    plt.title('Effective Drain Voltage vs Actual Drain Voltage (Varying Vgs)')
     plt.xlabel('Vds (V)')
-    plt.ylabel('Vth (V)')
+    plt.ylabel('Vdseff (V)')
+    plt.plot(vds_range, vds_range, 'k--', label='Ideal Vdseff = Vds')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # ------------------------------
+    # Test 8: Vdseff vs Vds for different delta values
+    original_delta = model.delta  
+    plt.figure(figsize=(10, 6))
+    
+    for delta in [0.001, 0.01, 0.05]: 
+        model.delta = delta
+        vdseff_values = [model.calculate_Vdseff(vds, 1.0, Vbs, 300) for vds in vds_range]
+        plt.plot(vds_range, vdseff_values, label=f'delta={delta}')
+    
+    model.delta = original_delta  
+    vdsat = model.calculate_Vdsat(1.0, Vbs, 300, Vds)
+    plt.axvline(x=vdsat, color='gray', linestyle='--', label='Vdsat')
+    plt.title('Effective Drain Voltage vs Actual Drain Voltage (Varying delta)')
+    plt.xlabel('Vds (V)')
+    plt.ylabel('Vdseff (V)')
+    plt.plot(vds_range, vds_range, 'k--', label='Ideal Vdseff = Vds')
+    plt.legend()
     plt.grid(True)
     plt.show()
