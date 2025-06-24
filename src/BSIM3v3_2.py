@@ -60,45 +60,46 @@ class BSIM3v3_Model:
         self.k_B      = 1.38e-23                    # J/K,   Boltzmann constant
         # Threshold voltage related parameters
         self.Vth0     = 0.40                        # V,     Zero-bias threshold voltage
-        self.K1       = 0.3                         # √V,    First body effect coefficient
+        self.K1       = 0.5                         # √V,    First body effect coefficient
         self.K2       = 0.01                        # -,     Second body effect coefficient
-        self.K3       = 2.0                         # -,     Narrow width effect coefficient
-        self.K3b      = -0.05                       # -,     Body effect on narrow width coefficient
-        self.Dvt0     = 2.5                         # -,     Short-channel effect coefficient at Vbs=0
-        self.Dvt1     = 0.6                         # -,     Short-channel effect coefficient
-        self.Dvt2     = -0.03                       # 1/V,   Short-channel effect coefficient for body bias
+        self.K3       = 80.0                         # -,     Narrow width effect coefficient
+        self.K3b      = 0                       # -,     Body effect on narrow width coefficient
+        self.Dvt0     = 2.2                         # -,     Short-channel effect coefficient at Vbs=0
+        self.Dvt1     = 0.53                         # -,     Short-channel effect coefficient
+        self.Dvt2     = -0.032                       # 1/V,   Short-channel effect coefficient for body bias
         self.Dvt0w    = 0.0                         # -,     Narrow width effect coefficient at Vbs=0
         self.Dvt1w    = 5.3e6                       # -,     Narrow width effect coefficient
         self.Dvt2w    = -0.032                      # 1/V,   Narrow width effect coefficient for body bias
-        self.Nlx      = 1.5e-7                      # m,     Lateral non-uniform doping parameter
-        self.W0       = 2.0e-6                      # m,     Narrow width parameter
-        # DIBL and substrate effect parameters
-        self.Dsub     = 0.8                         # -,     DIBL coefficient in subthreshold region
-        self.Eta0     = 0.1                         # -,     DIBL coefficient in strong inversion
-        self.Etab     = -0.07                       # -,     Body bias effect on DIBL coefficient
+        self.Nlx      = 1.47e-7                      # m,     Lateral non-uniform doping parameter
+        self.W0       = 2.5e-6                      # m,     Narrow width parameter
+
         # Mobility parameters (180nm NMOS)
         self.mobMod   = 3                           # -,     Mobility model selector
-        self.U0       = 0.05                        # m2/V·s, Low-field mobility
-        self.Ua       = 1e-10                       # m/V,   First-order mobility degradation coefficient
-        self.Ub       = 1e-19                       # (m/V)2, Second-order mobility degradation coefficient
-        self.Uc       = -1.0                        # -,     Body-effect coefficient for mobility degradation
+        self.U0       = 0.067                        # m2/V·s, Low-field mobility
+        self.Ua       = 2.25E-9                       # m/V,   First-order mobility degradation coefficient
+        self.Ub       = 5.87E-19                       # (m/V)2, Second-order mobility degradation coefficient
+        self.Uc       = -0.046                        # -,     Body-effect coefficient for mobility degradation mobMod =1, 2:-4.65e-11 mobMod=3:-0.046
         # Velocity saturation parameters
-        self.VSAT     = 1.2e5                       # m/s,   Saturation velocity
-        self.A0       = 1.2                         # -,     Bulk charge effect coefficient
-        self.A1       = 0.01                        # -,     Saturation voltage parameter
+        self.VSAT     = 8.0E4                       # m/s,   Saturation velocity
+        self.A0       = 1.0                         # -,     Bulk charge effect coefficient
+        self.A1       = 0.0                        # -,     Saturation voltage parameter
         self.A2       = 1.0                         # -,     Saturation voltage parameter
-        self.B0       = 0.5e-6                      # -,     Width effect on Abulk
-        self.B1       = 0.5e-6                      # -,     Width effect on Abulk
+        self.B0       = 0.0                      # -,     Width effect on Abulk
+        self.B1       = 0.0                     # -,     Width effect on Abulk
         # Output resistance parameters
-        self.Pclm     = 1.5                         # -,     Channel length modulation coefficient
-        self.Pdibl1   = 0.5                         # -,     DIBL coefficient for output resistance
-        self.Pdibl2   = 0.02                        # -,     DIBL coefficient for output resistance
-        self.Pdiblb   = -0.05                       # -,     Body effect on DIBL for output resistance
-        self.Drout    = 0.6                         # -,     Output resistance DIBL coefficient
-        self.Pvag     = 1e-7                        # 1/V,   Gate voltage effect on output resistance
-        self.Alpha0   = 0.01                        # -,     Substrate current parameter
-        self.Alpha1   = 0.01                        # -,     Substrate current parameter
+        self.Pclm     = 1.3                         # -,     Channel length modulation coefficient
+        self.Pdiblc1   = 0.5                         # -,     DIBL coefficient for output resistance
+        self.Pdiblc2   = 0.39                        # -,     DIBL coefficient for output resistance
+        self.Pdiblb   =  0.0                       # -,     Body effect on DIBL for output resistance
+        self.Drout    = 0.56                         # -,     Output resistance DIBL coefficient
+        self.Pvag     = 0.0                       # 1/V,   Gate voltage effect on output resistance
+        self.Alpha0   = 0.0                        # -,     Substrate current parameter
+        self.Alpha1   = 0.0                        # -,     Substrate current parameter
         self.Beta0    = 30.0                        # V/m,   Substrate current parameter
+        # DIBL and substrate effect parameters
+        self.Dsub     = self.Drout                         # -,     DIBL coefficient in subthreshold region
+        self.Eta0     = 0.08                         # -,     DIBL coefficient in strong inversion
+        self.Etab     = -0.07                       # -,     Body bias effect on DIBL coefficient
         # Geometry parameters (180nm process)
         self.Leff     = 180e-9                      # m,     Effective channel length
         self.Weff     = 1e-6                        # m,     Effective channel width (1um)
@@ -109,35 +110,36 @@ class BSIM3v3_Model:
         self.Toxm     = 2.0e-9                      # m,     Oxide thickness for modeling
         # Doping concentrations
         self.Nch      = 1.0e23                      # m-3,   Channel doping concentration
-        self.Ngate    = 1e25                        # m-3,   Poly doping concentration
+        self.Ngate    = 0                        # m-3,   Poly doping concentration
         self.Nds      = 1e26                        # m-3,   Source/drain doping concentration
         # Parasitic resistance
         self.Rds      = 50.0                        # ohm,     Source-drain resistance
         # Subthreshold parameters
-        self.n        = 1.5                         # -,     Subthreshold swing coefficient
-        self.Voff     = -0.1                        # V,     Offset voltage for subthreshold current
-        self.Keta     = 0.05                        # -,     Body effect coefficient for Voff
+        self.Voff     = -0.08                       # V,     Offset voltage for subthreshold current
+        self.Keta     = -0.047                      # -,     Body effect coefficient for Voff
         self.delta    = 0.01                        # -,     Smoothing parameter for Voff
         # Temperature parameters
-        self.Tnom     = 300.0                       # K,     Nominal temperature
-        self.Kt1      = -0.15                       # V,     Temperature coefficient for Vth
-        self.Kt1l     = 1e-9                        # V·m,   Temperature coefficient for Vth
-        self.Kt2      = 0.03                        # -,     Temperature coefficient for Vth
-        self.Ute      = -1.8                        # -,     Mobility temperature exponent
-        self.At       = 4.0e4                       # m/s,   Velocity saturation temperature coefficient
-        self.Ags      = 0.5                         # -,     Body effect coefficient for bulk charge
+        self.Tnom     = 300.15                       # K,     Nominal temperature
+        self.Kt1      = -0.11                       # V,     Temperature coefficient for Vth
+        self.Kt1l     = 0.0                       # V·m,   Temperature coefficient for Vth
+        self.Kt2      = 0.022                        # -,     Temperature coefficient for Vth
+        self.Ute      = -1.5                        # -,     Mobility temperature exponent
+        self.At       = 3.3E4                      # m/s,   Velocity saturation temperature coefficient
+        self.Ags      = 0.0                         # -,     Body effect coefficient for bulk charge
         # Additional parameters
-        self.Pscbe1   = 0.001                       # -,     Substrate current body-effect coefficient 1
-        self.Pscbe2   = 0.001                       # -,     Substrate current body-effect coefficient 2
+        self.Pscbe1   = 4.24E8                      # -,     Substrate current body-effect coefficient 1
+        self.Pscbe2   = 1.0E-5                      # -,     Substrate current body-effect coefficient 2
         # State variables
-        self.Cit      = 0.1                         # F/m2,  Interface trap capacitance
+        self.Cit      = 0.0                         # F/m2,  Interface trap capacitance
         self.Citd     = 0.1                         # F/m2,  Interface trap capacitance derivative
         self.Citb     = 0.1                         # F/m2,  Interface trap capacitance body effect
-        self.Nfactor  = 0.1                         # -,     Subthreshold slope factor
+        self.Nfactor  = 1.0                        # -,     Subthreshold slope factor
         self.NI0      = 1.45e16                     # m-3,   Intrinsic carrier concentration at 300K
         self.NITEXP   = 1.5                         # -,     Exponent for temperature dependence of ni
         self.Cox      = self.epsOx / self.Tox       # F/m², Oxide capacitance per unit area
-
+        self.Cdsc     = 2.4E-4                       # Axial capacitance (F)
+        self.Cdscd    = 0.0                       # Drain-bias sensitivity of Cdsc F/Vm2
+        self.Cdscb    = 0.0                       # Body-bias sensitivity of Cdsc F/Vm2
 
     def ni(self, T):
         """Calculate intrinsic carrier concentration (ni) based on temperature.
@@ -221,7 +223,7 @@ class BSIM3v3_Model:
         self.Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
         # Depletion widths and characteristic lengths
         self.Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - self.Vbseff) / (self.q * self.Nch))
-        lt0         = np.sqrt(self.epsSi * self.Xdep0(T) * self.Tox / self.epsOx)
+        lt0         = np.sqrt(self.epsSi * self.Xdep * self.Tox / self.epsOx)
         ltw         = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2w * self.Vbseff)))
         lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * self.Vbseff)))
         # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
@@ -277,7 +279,8 @@ class BSIM3v3_Model:
                     self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)) *  \
                     (1 + self.Uc * self.Vbseff)
        
-        mob_eff = mob_temp / denom
+        mob_eff   = mob_temp / denom
+        # print(f"Vgs: {Vgs}, Vbs: {Vbs}, T: {T}, Vgsteff: {Vgsteff}, Vth: {Vth}, mob_eff: {mob_eff}")
         return mob_eff
     
     def calculate_Vgsteff(self, Vgs,T,Vds, Vbs):
@@ -293,13 +296,29 @@ class BSIM3v3_Model:
         Returns:
             float: Effective gate overdrive voltage in volts
         """
+
+        # Effective body-source voltage with smoothing (Eq. 2.1.26)
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Cd = self.epsSi / self.Xdep0(T)
+        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * self.Vbseff)))
+        # Calculate the exponential terms
+        term1 = np.exp(-self.Dvt1 * self.Leff / (2 * lt))
+        term2 = np.exp(-self.Dvt1 * self.Leff / (lt))
+        
+        # Calculate the main equation
+        n = 1 + self.Nfactor * (Cd/self.Cox) + \
+            ((self.Cdsc+self.Cdscd*Vds+self.Cdscb*Vbseff) *(term1+2*term2))/self.Cox +\
+            self.Cit/self.Cox
         Vth             = self.calculate_V_th(Vds, Vbs, T)  
         Vgst            = Vgs - Vth
-        nom             = 2 * self.n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * self.n * self.v_t(T))))
-        denom           = 1 + 2 * self.n * self.Cox * np.sqrt(2 * self.Phi_s(T) / (self.q * self.epsSi * self.Nch)) * np.exp(-(Vgst - 2 * self.Voff) / (2 * self.n * self.v_t(T)))
-        Vgsteff    = nom / denom
+        nom             = 2 * n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * n * self.v_t(T))))
+        denom           = 1 + 2 * n * self.Cox * \
+                          np.sqrt(2 * self.Phi_s(T) / (self.q * self.epsSi * self.Nch)) * \
+                          np.exp(-(Vgst - 2 * self.Voff) / (2 * n * self.v_t(T)))
+        Vgsteff         = nom / denom
         return Vgsteff
-    
+
     def calculate_Vdsat(self, Vgs, Vbs, T,Vds):
         """Calculate saturation voltage (Vdsat) (Eq. 3.4.3).
         
@@ -430,7 +449,7 @@ class BSIM3v3_Model:
         Esat     = 2 * self.VSAT / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
         V_Asat      = (Esat * self.Leff + Vdsat + 2 * self.Rds * self.VSAT * self.Cox * self.Weff * Vgsteff * (1 - self.calculate_Abulk(T) * Vdsat / (2 * (Vgsteff + 2 * self.v_t(T))))) / (2/self.A2 - 1 + self.Rds * self.VSAT * self.Cox * self.Weff * self.calculate_Abulk(T))
         V_ACLM      = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T) * Esat * self.lit) * (Vds - Vdsat)
-        theta_rout  = self.Pdibl1 * (np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 2 * np.exp(-self.Drout * self.Leff / self.lit)) + self.Pdibl2
+        theta_rout  = self.Pdiblc1 * (np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 2 * np.exp(-self.Drout * self.Leff / self.lit)) + self.Pdiblc2
         V_ADIBL     = (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * self.Vbseff)) * (1 - self.calculate_Abulk(T) * Vdsat / (self.calculate_Abulk(T) * Vdsat + Vgsteff + 2 * self.v_t(T)))
         V_A         = V_Asat + (1 + self.Pvag * Vgsteff / (Esat * self.Leff)) * (1 / V_ACLM + 1 / V_ADIBL)**-1
         # Substrate current induced body effect
@@ -439,7 +458,7 @@ class BSIM3v3_Model:
         I_ds        = I_dsat * (1 + (Vds - Vdsat) / V_A) * (1 + (Vds - Vdsat) / V_ASCBE)
         return I_ds
     
-    def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
+    def compute(self, Vgs, Vds, Vbs=0.0, T=300.15):
         """Calculate drain current for given bias conditions.
         
         Main interface method that determines operation region and calculates
@@ -449,7 +468,7 @@ class BSIM3v3_Model:
             Vgs (float): Gate-source voltage in volts
             Vds (float): Drain-source voltage in volts
             Vbs (float, optional): Bulk-source voltage in volts. Defaults to 0.
-            T (float, optional): Temperature in Kelvin. Defaults to 300.0.
+            T (float, optional): Temperature in Kelvin. Defaults to 300.15.
             
         Returns:
             float: Drain current in amperes
@@ -564,5 +583,18 @@ if __name__ == "__main__":
     plt.xlabel('Temperature (K)')
     plt.ylabel('Id (A)')
     # plt.legend()
+    plt.grid(True)
+    plt.show()
+
+        # ------------------------------
+    # Test 6: Mobility vs Temperature for different Vgs
+    plt.figure(figsize=(10, 6))
+    for vgs in vgs_range:  # Selected Vgs values to show different curves
+        mobilities = [model.calculate_mobility(vgs, T, Vds, Vbs) for T in temp_range]
+        plt.plot(temp_range, mobilities, label=f'Vgs={vgs}V')
+    
+    plt.title('Effective Mobility vs Temperature')
+    plt.xlabel('Temperature (K)')
+    plt.ylabel('Mobility (m²/V·s)')
     plt.grid(True)
     plt.show()
