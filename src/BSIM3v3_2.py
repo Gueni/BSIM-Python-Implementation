@@ -266,14 +266,19 @@ class BSIM3v3_Model:
         # Mobility degradation models
         if self.mobMod == 1:
             # Vertical field mobility degradation model (Eq. 3.2.1)
-            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *         \
-                    ((Vgsteff + 2*Vth)/self.Tox) +                  \
+            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *             \
+                    ((Vgsteff + 2*Vth)/self.Tox) +                      \
                     self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)
             
-        elif self.mobMod == 2:
-            denom = 1 + (self.Ua + self.Uc * self.Vbseff) * (Vgsteff/self.Tox) + self.Ub * np.square(Vgsteff/self.Tox)
-        else:  
-            denom = 1 + (self.Ua * (Vgsteff + 2*Vth)/self.Tox + self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)) * (1 + self.Uc * self.Vbseff)
+        elif self.mobMod == 2:  # To account for depletion mode devices, another mobility model option is given by the following
+            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *             \
+                    (Vgsteff/self.Tox) +                                \
+                    self.Ub * np.square(Vgsteff/self.Tox)
+        else:  # To consider the body bias dependence of Eq. 3.2.1 further, we have introduced the following expression
+            denom = 1 + (self.Ua * ((Vgsteff + 2*Vth)/self.Tox) +       \
+                    self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)) *  \
+                    (1 + self.Uc * self.Vbseff)
+       
         mob_eff = mob_temp / denom
         return mob_eff
     
@@ -447,10 +452,10 @@ class BSIM3v3_Model:
         Returns:
             float: Drain current in amperes
         """
-        Vgsteff = self.calculate_Vgsteff(Vgs, T,Vds, Vbs)
-        Vdseff = self.calculate_Vdseff(Vds, Vgs, Vbs, T)
-        Vdsat   =  self.calculate_Vdsat(Vgs,Vbs,T,Vds)
-        # Determine operation region and calculate current
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T,Vds, Vbs)
+        Vdseff      = self.calculate_Vdseff(Vds, Vgs, Vbs, T)
+        Vdsat       =  self.calculate_Vdsat(Vgs,Vbs,T,Vds)
+
         if Vgsteff <= 0:  # Subthreshold region
             I_ds = self.calculate_subthreshold_current(Vgs, Vds, T, Vbs)
         else:
@@ -460,6 +465,9 @@ class BSIM3v3_Model:
                 I_ds = self.calculate_saturation_current(Vgs, Vdseff, Vbs, T)
         return I_ds
 #? -------------------------------------------------------------------------------
+
+
+
 if __name__ == "__main__":
     model = BSIM3v3_Model()
     
