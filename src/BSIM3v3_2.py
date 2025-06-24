@@ -321,14 +321,6 @@ class BSIM3v3_Model:
         Vgsteff         = nom / denom
         return Vgsteff
 
-    
-
-    
-
-
-
-
-    
     def calculate_Vdsat(self, Vgs, Vbs, T,Vds):
         """Calculate saturation voltage (Vdsat) (Eq. 3.4.3).
         
