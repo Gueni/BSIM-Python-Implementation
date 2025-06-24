@@ -462,10 +462,16 @@ class BSIM3v3_Model:
 #? -------------------------------------------------------------------------------
 if __name__ == "__main__":
     model = BSIM3v3_Model()
-    #! ------------------------------
+    
+    vds_range   = np.linspace(     0    ,    10, 50)      
+    vgs_range   = np.linspace(  -0.5    ,    10, 50)  
+    temp_range  = np.linspace(   250    ,   400, 50) 
+    Vds         = 0.1  
+    Vbs         = 0.0  
+
+    # ------------------------------
     # Test 1: Vth vs Vds
-    vds_range   = np.linspace(0, 5, 50)
-    vth_vds     = [model.calculate_V_th(vds, 0, 400) for vds in vds_range]
+    vth_vds = [model.calculate_V_th(vds, 0, 400) for vds in vds_range]
     
     plt.figure(figsize=(10, 6))
     plt.plot(vds_range, vth_vds)
@@ -474,50 +480,42 @@ if __name__ == "__main__":
     plt.ylabel('Vth (V)')
     plt.grid(True)
     plt.show()
-    #! ------------------------------
+
+    # ------------------------------
     # Test 2: Id vs Vgs for different Vds
-    vgs_range   = np.linspace(0, 15, 50)
-    vds_values  = np.linspace(0, 5, 50)
     plt.figure(figsize=(10, 6))
-    for vds in vds_values:
+    for vds in vds_range:
         ids = [model.compute(vgs, vds) for vgs in vgs_range]
         plt.plot(vgs_range, ids, label=f'Vds={vds}V')
     
     plt.title('Drain Current vs Gate-Source Voltage')
     plt.xlabel('Vgs (V)')
     plt.ylabel('Id (A)')
-    # plt.legend()
     plt.grid(True)
     plt.yscale('log')
     plt.show()
-    #! ------------------------------
+
+    # ------------------------------
     # Test 3: Id vs Vds for different Vgs
-    vds_range   = np.linspace(0, 5, 50)
-    vgs_values  = np.linspace(0, 15, 50)
-    
     plt.figure(figsize=(10, 6))
-    for vgs in vgs_values:
+    for vgs in vgs_range:
         ids = [model.compute(vgs, vds) for vds in vds_range]
         plt.plot(vds_range, ids, label=f'Vgs={vgs}V')
     
     plt.title('Drain Current vs Drain-Source Voltage')
     plt.xlabel('Vds (V)')
     plt.ylabel('Id (A)')
-    # plt.legend()
     plt.grid(True)
     plt.show()
-#? -------------------------------------------------------------------------------
-    #! ------------------------------
+
+    # ------------------------------
     # Test 4: Vgsteff vs (Vgs-Vth)
-    vgs_range = np.linspace(0, 5, 100)
-    vth = model.calculate_V_th(0.1, 0, 300)  # Calculate at nominal conditions
+    vth = model.calculate_V_th(Vds, Vbs, 300)
     vgsteff_values = []
     vgst_values = []
     
-    Vds = 0.1  # Example value for Vds
-    Vbs = 0.0  # Example value for Vbs
     for vgs in vgs_range:
-        Vth = model.calculate_V_th(Vds, Vbs, 300)  
+        Vth = model.calculate_V_th(Vds, Vbs, 300)
         vgst = vgs - Vth
         vgsteff = model.calculate_Vgsteff(vgs, 300, Vds, Vbs)
         vgsteff_values.append(vgsteff)
@@ -533,24 +531,10 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.show()
 
-
-    #! ------------------------------
-    # Test 4: log(Vgsteff) vs (Vgs-Vth)
-    vgs_range = np.linspace(-0.5, 5, 500)  # Extend to negative to see subthreshold
-    vth = model.calculate_V_th(0.1, 0, 300)  # Calculate at nominal conditions
-    vgsteff_values = []
-    vgst_values = []
-    
-    for vgs in vgs_range:
-        Vth = model.calculate_V_th(0.1, 0, 300)  
-        vgst = vgs - Vth
-        vgsteff = model.calculate_Vgsteff(vgs, 300, Vds, Vbs)
-        vgsteff_values.append(vgsteff)
-        vgst_values.append(vgst)
-    
+    # ------------------------------
+    # Test 4 (log): log(Vgsteff) vs (Vgs-Vth)
     plt.figure(figsize=(10, 6))
-    plt.plot(vgst_values, np.log10(np.maximum(1e-20, vgsteff_values)), 
-             label='log(Vgsteff)')  # Clip to avoid log(0)
+    plt.plot(vgst_values, np.log10(np.maximum(1e-20, vgsteff_values)), label='log(Vgsteff)')
     plt.axvline(x=0, color='gray', linestyle='--', label='Vgs=Vth')
     plt.title('log(Effective Gate Overdrive) vs (Vgs-Vth)')
     plt.xlabel('Vgs - Vth (V)')
@@ -559,20 +543,16 @@ if __name__ == "__main__":
     plt.grid(True, which='both')
     plt.show()
 
-        #! ------------------------------
+    # ------------------------------
     # Test 5: Id vs Temperature for different Vgs
-    temp_range = np.linspace(250, 400, 50)  # Temperature range from 250K to 400K
-    vgs_values = [0.5, 1.0, 1.5, 2.0, 5, 10, 15, 20]      # Different gate voltages to test
-    vds = 1.0                              # Fixed drain-source voltage
-    
     plt.figure(figsize=(10, 6))
-    for vgs in vgs_values:
-        ids = [model.compute(vgs, vds, 0.0, T) for T in temp_range]
+    for vgs in vgs_range:
+        ids = [model.compute(vgs, Vds, Vbs, T) for T in temp_range]
         plt.plot(temp_range, ids, label=f'Vgs={vgs}V')
     
     plt.title('Drain Current vs Temperature')
     plt.xlabel('Temperature (K)')
     plt.ylabel('Id (A)')
-    plt.legend()
+    # plt.legend()
     plt.grid(True)
     plt.show()
