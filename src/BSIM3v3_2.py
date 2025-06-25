@@ -222,7 +222,19 @@ class BSIM3v3_Model:
         """
         vbi = self.v_t(T) * np.log((self.Nch * self.Nds) / np.square(self.ni(T)))
         return vbi
+   
+    def calculate_Rds(self, Vds, Vgs, Vbs, T):
+        """Calculate bias-dependent source/drain resistance."""
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        Rds         = self.Rdsw_T_dependent(T) * (1 + self.Prwg * Vgsteff + self.Prwb*(np.sqrt(self.Phi_s(T)-Vbs) - np.sqrt(self.Phi_s(T))))/(1e6*self.Weff)**self.Wr
+        return Rds
 
+    def Rdsw_T_dependent(self, T):
+        """Calculate temperature-dependent source/drain resistance (Rdsw)."""
+        # Source/drain resistance temperature dependence
+        Rdsw = self.Rdsw + self.Pr * (T / self.Tnom - 1)
+        return Rdsw
+         
     def calculate_V_th(self, Vds, Vbs, T):
         """Calculate threshold voltage (Vth) based on BSIM3v3 model (Eq. 2.1.25).
         
@@ -243,35 +255,35 @@ class BSIM3v3_Model:
         """
         # Effective body-source voltage with smoothing (Eq. 2.1.26)
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
-        self.Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
         # Depletion widths and characteristic lengths
-        self.Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - self.Vbseff) / (self.q * self.Nch))
+        self.Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - Vbseff) / (self.q * self.Nch))
         lt0         = np.sqrt(self.epsSi * self.Xdep * self.Tox / self.epsOx)
-        ltw         = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2w * self.Vbseff)))
-        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * self.Vbseff)))
+        ltw         = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2w * Vbseff)))
+        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * Vbseff)))
         # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
         K1ox        = self.K1 * (self.Tox / self.Toxm)
         K2ox        = self.K2 * (self.Tox / self.Toxm)
         Vth0ox      = self.Vth0 - K1ox * np.sqrt(self.Phi_s(T))
         # Calculate all terms of threshold voltage (Eq. 2.1.25)
-        term1       = Vth0ox + K1ox * np.sqrt(self.Phi_s(T) - self.Vbseff) - K2ox * self.Vbseff
+        term1       = Vth0ox + K1ox * np.sqrt(self.Phi_s(T) - Vbseff) - K2ox * Vbseff
         term2       = K1ox * (np.sqrt(1 + self.Nlx/self.Leff) - 1) * np.sqrt(self.Phi_s(T))
-        term3       = (self.K3 + self.K3b * self.Vbseff) * (self.Tox / (self.Weff + self.W0)) * self.Phi_s(T)
+        term3       = (self.K3 + self.K3b * Vbseff) * (self.Tox / (self.Weff + self.W0)) * self.Phi_s(T)
         term4       = -self.Dvt0w * (np.exp(-self.Dvt1w * self.Weff * self.Leff/(2 * ltw)) + 2 * np.exp(-self.Dvt1w * self.Weff * self.Leff/ltw)) * (self.Vbi(T) - self.Phi_s(T))
         term5       = -self.Dvt0 * (np.exp(-self.Dvt1 * self.Leff/(2 * lt)) + 2 * np.exp(-self.Dvt1 * self.Leff/lt)) * (self.Vbi(T) - self.Phi_s(T))
-        term6       = -(np.exp(-self.Dsub * self.Leff/(2 * lt0)) + 2 * np.exp(-self.Dsub * self.Leff/lt0)) * (self.Eta0 + self.Etab * self.Vbseff) * Vds
+        term6       = -(np.exp(-self.Dsub * self.Leff/(2 * lt0)) + 2 * np.exp(-self.Dsub * self.Leff/lt0)) * (self.Eta0 + self.Etab * Vbseff) * Vds
         # Temperature effect on threshold voltage
         delta_T     = (T / self.Tnom) - 1
-        term7       = (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * self.Vbseff) * delta_T
+        term7       = (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * Vbseff) * delta_T
         Vth    = term1 + term2 + term3 + term4 + term5 + term6 + term7
 
-        #print(f"Vth: {Vth}, Vbseff: {self.Vbseff}, Xdep: {self.Xdep}, Tox: {self.Tox}, Toxm: {self.Toxm}")
+        #print(f"Vth: {Vth}, Vbseff: {Vbseff}, Xdep: {self.Xdep}, Tox: {self.Tox}, Toxm: {self.Toxm}")
         return Vth
     
     def vth_T_dependent(self,Vds, Vbs, T):
         """Calculate temperature-dependent threshold voltage (Vth) based on BSIM3v3 model."""
         Vth_TNOM    = self.calculate_V_th(Vds, Vbs, self.Tnom)
-        Vth = (Vth_TNOM + (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * self.Vbseff) * (T / self.Tnom - 1))
+        Vth = (Vth_TNOM + (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * Vbs) * (T / self.Tnom - 1))
         return Vth
     
     def calculate_mobility(self, Vgs, T,Vds, Vbs):
@@ -300,18 +312,18 @@ class BSIM3v3_Model:
         # Mobility degradation models
         if self.mobMod == 1:
             # Vertical field mobility degradation model (Eq. 3.2.1)
-            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *             \
+            denom = 1 + (self.Ua + self.Uc * Vbs) *             \
                     ((Vgsteff + 2*Vth)/self.Tox) +                      \
                     self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)
             
         elif self.mobMod == 2:  # To account for depletion mode devices, another mobility model option is given by the following
-            denom = 1 + (self.Ua + self.Uc * self.Vbseff) *             \
+            denom = 1 + (self.Ua + self.Uc * Vbs) *             \
                     (Vgsteff/self.Tox) +                                \
                     self.Ub * np.square(Vgsteff/self.Tox)
         else:  # To consider the body bias dependence of Eq. 3.2.1 further, we have introduced the following expression
             denom = 1 + (self.Ua * ((Vgsteff + 2*Vth)/self.Tox) +       \
                     self.Ub * np.square((Vgsteff + 2*Vth)/self.Tox)) *  \
-                    (1 + self.Uc * self.Vbseff)
+                    (1 + self.Uc * Vbs)
        
         mob_eff   = U0_T / denom
         # print(f"Vgs: {Vgs}, Vbs: {Vbs}, T: {T}, Vgsteff: {Vgsteff}, Vth: {Vth}, mob_eff: {mob_eff}")
@@ -335,7 +347,7 @@ class BSIM3v3_Model:
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
         Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
         Cd = self.epsSi / self.Xdep0(T)
-        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * self.Vbseff)))
+        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * Vbseff)))
         # Calculate the exponential terms
         term1 = np.exp(-self.Dvt1 * self.Leff / (2 * lt))
         term2 = np.exp(-self.Dvt1 * self.Leff / (lt))
@@ -345,7 +357,7 @@ class BSIM3v3_Model:
             ((self.Cdsc+self.Cdscd*Vds+self.Cdscb*Vbseff) *(term1+2*term2))/self.Cox +\
             self.Cit/self.Cox
         
-        Vth             = self.vth_T_dependent(Vds, Vbs, T)  
+        Vth             = self.vth_T_dependent(Vds, Vbseff, T)  
         Vgst            = Vgs - Vth
         nom             = 2 * n * self.v_t(T) * np.log(1 + np.exp(Vgst / (2 * n * self.v_t(T))))
         denom           = 1 + 2 * n * self.Cox * \
@@ -367,25 +379,27 @@ class BSIM3v3_Model:
         Returns:
             float: Saturation voltage in volts
         """
-        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbseff)  # Recalculate Vgsteff for consistency
         Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
-        Rds         = self.calculate_Rds(Vds, Vgs, Vbs, T)  # Calculate bias-dependent source/drain resistance
+        Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance
 
         if Rds == 0:
             term1 = (Esat * self.Leff * (Vgsteff + 2 * self.v_t(T))) 
-            term2 = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff + 2 * self.v_t(T))
+            term2 = (self.calculate_Abulk(T,Vbs) * Esat * self.Leff + Vgsteff + 2 * self.v_t(T))
             Vdsat = term1 / term2
         elif Rds > 0:
 
                 lamda        = self.A1 * Vgsteff + self.A2
 
-                term1        = self.calculate_Abulk(T)**2 * self.Weff * self.Vsat_T_dependent(T) * self.Cox * Rds
-                term2        = (1/lamda - 1) * self.calculate_Abulk(T)
+                term1        = self.calculate_Abulk(T,Vbs)**2 * self.Weff * self.Vsat_T_dependent(T) * self.Cox * Rds
+                term2        = (1/lamda - 1) * self.calculate_Abulk(T,Vbs)
                 a            = term1 + term2
                 
                 term3        = (Vgsteff + 2*self.v_t(T)) * (2/lamda - 1)
-                term4        = self.calculate_Abulk(T) * Esat * self.Leff
-                term5        = 3 * self.calculate_Abulk(T) * (Vgsteff + 2*self.v_t(T)) * self.Weff * self.Vsat_T_dependent(T) * self.Cox * Rds
+                term4        = self.calculate_Abulk(T,Vbs) * Esat * self.Leff
+                term5        = 3 * self.calculate_Abulk(T,Vbs) * (Vgsteff + 2*self.v_t(T)) * self.Weff * self.Vsat_T_dependent(T) * self.Cox * Rds
                 b            = -(term3 + term4 + term5)
                 
                 term6        = (Vgsteff + 2*self.v_t(T)) * Esat * self.Leff
@@ -406,7 +420,7 @@ class BSIM3v3_Model:
         v_sat = self.VSAT - self.At * (T / self.Tnom - 1)
         return v_sat
 
-    def calculate_Abulk(self, T):
+    def calculate_Abulk(self, T,Vbs):
         """Calculate bulk charge effect coefficient (Abulk) (Eq. 2.4.1).
         
         Accounts for non-uniform channel doping effects on threshold voltage.
@@ -419,8 +433,8 @@ class BSIM3v3_Model:
         """
         # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
         K1ox        = self.K1 * (self.Tox / self.Toxm)
-        term1       = 1 + (K1ox / (2 * np.sqrt(self.Phi_s(T) - self.Vbseff))) * (self.A0 * self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))) * (1 - self.Ags * np.square(self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))))
-        term2       = (self.B0 / (self.Weff + self.B1)) / (1 + self.Keta * self.Vbseff)
+        term1       = 1 + (K1ox / (2 * np.sqrt(self.Phi_s(T) - Vbs))) * (self.A0 * self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))) * (1 - self.Ags * np.square(self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))))
+        term2       = (self.B0 / (self.Weff + self.B1)) / (1 + self.Keta * Vbs)
         self.Abulk  = term1 + term2
         return self.Abulk
     
@@ -459,7 +473,7 @@ class BSIM3v3_Model:
         Vth     = self.vth_T_dependent(Vds, Vbs, T)  
         Vgst    = Vgs - Vth
         mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
-        n       = 1 + (self.Cit + self.Citd * Vds + self.Citb * self.Vbseff) / self.Cox + self.Nfactor * self.epsSi / (self.Cox * self.Xdep)
+        n       = 1 + (self.Cit + self.Citd * Vds + self.Citb * Vbseff) / self.Cox + self.Nfactor * self.epsSi / (self.Cox * self.Xdep)
         I_s0    = mob_eff * (self.Weff / self.Leff) * np.sqrt(self.q * self.epsSi * self.Nch * np.square(self.v_t(T)) / (2 * self.Phi_s(T)))
         I_sub   = I_s0 * (1 - np.exp(-Vds / self.v_t(T))) * np.exp((Vgst - self.Voff) / (n * self.v_t(T)))
         return I_sub
@@ -480,7 +494,7 @@ class BSIM3v3_Model:
         Esat     = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
         Rds     = self.calculate_Rds(Vds, Vgs, Vbs, T)  # Calculate bias-dependent source/drain resistance
         mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
-        Vb      = (Vgsteff + 2 * self.v_t(T)) / self.calculate_Abulk(T)
+        Vb      = (Vgsteff + 2 * self.v_t(T)) / self.calculate_Abulk(T,Vbs)
         I_dso   = mob_eff * self.Cox * (self.Weff / self.Leff) * Vgsteff * Vds * (1 - Vds / (2 * Vb)) / (1 + Vds / (Esat * self.Leff))
         Qchs0 = self.Cox * Vgsteff
         # Add source-drain resistance effect (Eq. 3.3.5)
@@ -512,37 +526,50 @@ class BSIM3v3_Model:
         Returns:
             float: Drain current in amperes
         """
-        Vgsteff = self.calculate_Vgsteff(Vgs, T)
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
         self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
-        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T)
-        I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T) * Vdsat)
-        # Calculate Early voltages
-        Esat     = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
-        V_Asat      = (Esat * self.Leff + Vdsat + 2 * self.Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * Vgsteff * (1 - self.calculate_Abulk(T) * Vdsat / (2 * (Vgsteff + 2 * self.v_t(T))))) / (2/self.A2 - 1 + self.Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * self.calculate_Abulk(T))
-        V_ACLM      = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T) * Esat * self.lit) * (Vds - Vdsat)
-        theta_rout  = self.Pdiblc1 * (np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 2 * np.exp(-self.Drout * self.Leff / self.lit)) + self.Pdiblc2
-        V_ADIBL     = (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * self.Vbseff)) * (1 - self.calculate_Abulk(T) * Vdsat / (self.calculate_Abulk(T) * Vdsat + Vgsteff + 2 * self.v_t(T)))
-        V_A         = V_Asat + (1 + self.Pvag * Vgsteff / (Esat * self.Leff)) * (1 / V_ACLM + 1 / V_ADIBL)**-1
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T)
+        lamda       = self.A1 * Vgsteff + self.A2
+        Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance
+
+        # Calculate 1/VASCRE (Equation 3.5.7)
+        inv_VASCBE  = (self.Pscbe2 / self.Leff) * np.exp((-self.Pscbe1*self.lit) / (Vds - Vdsat))
+        VASCBE      = 1 / inv_VASCBE
+
+        theta_rout  =   self.Pdiblc1 * (
+                        np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 
+                        2 * np.exp(-self.Drout * self.Leff / self.lit)
+                        ) + self.Pdiblc2
+
+        VADIBLC     =   (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * Vbseff)) *        \
+                        (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (self.calculate_Abulk(T,Vbs) * Vdsat + Vgsteff + 2 * self.v_t(T))))
+
+        VACLM       =   ((self.calculate_Abulk(T,Vbs) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T,Vbs) * Esat * self.lit)) * \
+                        (Vds - Vdsat)
+
+        VAsat      =   ((Esat * self.Leff) + Vdsat + (2 * Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * Vgsteff) * \
+                        (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (2 * (Vgsteff + 2 * self.v_t(T)))))) / \
+                        ((2/lamda) - 1 + (Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * self.calculate_Abulk(T,Vbs)))
+
+        VA         =   VAsat + (1 + ((self.Pvag * Vgsteff) / (Esat * self.Leff))) * ((1 / VACLM) + (1 / VADIBLC))**-1
+
+       
         
-        # Substrate current induced body effect
-        V_ASCBE     = np.exp(self.Pscbe1 * self.lit / (Vds - Vdsat)) * self.Leff / self.Pscbe2
-        
-        # Saturation current with all effects
-        I_ds        = I_dsat * (1 + (Vds - Vdsat) / V_A) * (1 + (Vds - Vdsat) / V_ASCBE)
+        # Calculate the drain current (Ids)
+        I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T,Vbs) * Vdsat)
+        denominator     = 1 + (Rds * I_dsat) / Vdsat
+        first_term      = 1 + (Vds - Vdsat) / VA
+        second_term     = 1 + (Vds - Vdsat) / VASCBE
+
+        I_ds = (I_dsat / denominator) * first_term * second_term
+            
+
         return I_ds
 
-    def calculate_Rds(self, Vds, Vgs, Vbs, T):
-        """Calculate bias-dependent source/drain resistance."""
-        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
-        Rds         = self.Rdsw_T_dependent(T) * (1 + self.Prwg * Vgsteff + self.Prwb*(np.sqrt(self.Phi_s(T)-Vbs) - np.sqrt(self.Phi_s(T))))/(1e6*self.Weff)**self.Wr
-        return Rds
-
-    def Rdsw_T_dependent(self, T):
-        """Calculate temperature-dependent source/drain resistance (Rdsw)."""
-        # Source/drain resistance temperature dependence
-        Rdsw = self.Rdsw + self.Pr * (T / self.Tnom - 1)
-        return Rdsw
-            
+   
     def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
         """Calculate drain current for given bias conditions.
         
