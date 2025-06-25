@@ -105,7 +105,7 @@ class BSIM3v3_Model:
         self.Pdiblc2 = 0.45        # Matched to Pdiblc1
         self.Pdiblb = -0.08        # Added body bias effect on DIBL
         # Geometry parameters (180nm process)
-        self.Leff     = 180e-9                      # m,     Effective channel length
+        self.Leff     = 180e-6                      # m,     Effective channel length
         self.Weff     = 1e-6                        # m,     Effective channel width (1um)
         self.Ldrawn   = 180e-9                      # m,     Drawn channel length
         self.Wdrawn   = 1e-6                        # m,     Drawn channel width
@@ -693,6 +693,10 @@ if __name__ == "__main__":
     vds_range = np.linspace(0, 10, 100)
     vgs_range = np.linspace(-0.5, 5, 100)
     temp_range = np.linspace(250, 400, 100)
+    # Common voltage ranges
+    vbs_range = np.linspace(-3, 0, 5)  # Body bias range
+    lengths = np.linspace(0.18e-6, 1e-6, 50)  # Channel length range
+    tox_range = np.linspace(1e-9, 5e-9, 5)  # Oxide thickness range
     Vds = 0.1
     Vbs = 0.0
 
@@ -1026,76 +1030,164 @@ if __name__ == "__main__":
         {div11}
     </div>
     """.format(div11=fig11.to_html(full_html=False, include_plotlyjs='cdn'))
-    # ------------------------------
     
     # ------------------------------
-    # Test 12: DIBL Effect - Vth vs Vds and ∂Vth/∂Vds
-    vds_range_dibl = np.linspace(0.1, 5, 100)  
-    vth_values = np.array([model.vth_T_dependent(vds, 0, 300) for vds in vds_range_dibl])
-    # Calculate numerical derivative ∂Vth/∂Vds
-    dVth_dVds = np.gradient(vth_values, vds_range_dibl)
-    fig12 = go.Figure()
-    # Add Vth trace (primary y-axis)
-    fig12.add_trace(go.Scatter(
-        x=vds_range_dibl,
-        y=vth_values,
-        name="Threshold Voltage (Vth)",
-        mode='lines',
-        line=dict(width=2, color='blue'),
-        yaxis='y1'
-    ))
-    
-    # Add ∂Vth/∂Vds trace (secondary y-axis)
-    fig12.add_trace(go.Scatter(
-        x=vds_range_dibl,
-        y=dVth_dVds,
-        name="DIBL Coefficient (∂Vth/∂Vds)",
-        mode='lines',
-        line=dict(width=2, color='red', dash='dot'),
-        yaxis='y2'
-    ))
-    
-    # Update layout with dual axes
-    fig12.update_layout(
-        title="<b></b><br>Threshold Voltage vs Drain Voltage and DIBL Coefficient",
-        xaxis_title="Drain-Source Voltage (V<sub>DS</sub>) [V]",
-        yaxis=dict(
-            title="Threshold Voltage (V<sub>th</sub>) [V]",
-            range=[min(vth_values)*0.95, max(vth_values)*1.05]
-        ),
-        yaxis2=dict(
-            title="DIBL Coefficient (∂V<sub>th</sub>/∂V<sub>DS</sub>) [V/V]",
-            overlaying="y",
-            side="right",
-            range=[min(dVth_dVds)*1.1, max(dVth_dVds)*1.1]  # Add some padding
-        ),
-        legend=dict(x=0.05, y=0.95),
-        hovermode="x unified",
-        template="plotly_white",
-        margin=dict(t=100)
-    )
-    
-    # Add annotation explaining DIBL effect
-    fig12.add_annotation(
-        x=0.5,
-        y=0.1,
-        xref="paper",
-        yref="paper",
-        text="DIBL (Drain-Induced Barrier Lowering) shows V<sub>th</sub> reduction at higher V<sub>DS</sub>",
-        showarrow=False,
-        font=dict(size=11),
-        bgcolor="white"
+    # Plot 13: Threshold voltage versus drain voltage at different body biases
+    fig13 = go.Figure()
+    for vbs in vbs_range:
+        vth_values = [model.vth_T_dependent(vds, vbs, 300) for vds in vds_range]
+        fig13.add_trace(go.Scatter(
+            x=vds_range,
+            y=vth_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+
+    fig13.update_layout(
+        title="Threshold Voltage vs Drain Voltage at Different Body Biases",
+        xaxis_title="Drain Voltage (Vds) [V]",
+        yaxis_title="Threshold Voltage (Vth) [V]",
+        legend_title="Body Bias"
     )
     
     html_content += """
     <div class="plot-container">
-        <h2>DIBL Effect Analysis</h2>
-        {div12}
+        <h2>Threshold Voltage vs Drain Voltage at Different Body Biases</h2>
+        {div13}
     </div>
-    """.format(div12=fig12.to_html(full_html=False, include_plotlyjs='cdn'))
+    """.format(div13=fig13.to_html(full_html=False, include_plotlyjs='cdn'))
 
-
+    # ------------------------------
+    # Plot 14: Channel length dependence of threshold voltage
+    delta_vth = []
+    original_length = model.Leff
     
+    for L in lengths:
+        model.Leff = L
+        vth = model.vth_T_dependent(0.1, 0, 300)  # Vds=0.1V, Vbs=0V, T=300K
+        delta_vth.append(vth - model.Vth0)  # Difference from nominal Vth0
+    
+    model.Leff = original_length  # Restore original value
+
+    fig14 = go.Figure()
+    fig14.add_trace(go.Scatter(
+        x=lengths*1e6,
+        y=delta_vth,
+        mode='lines'
+    ))
+
+    fig14.update_layout(
+        title="Channel Length Dependence of Threshold Voltage",
+        xaxis_title="Effective Channel Length (Leff) [μm]",
+        yaxis_title="ΔVth [V]"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Channel Length Dependence of Threshold Voltage</h2>
+        {div14}
+    </div>
+    """.format(div14=fig14.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Plot 15: Threshold voltage versus channel length at different biases
+    fig15 = go.Figure()
+    for vbs in vbs_range:
+        vth_values = []
+        for L in lengths:
+            model.Leff = L
+            vth_values.append(model.vth_T_dependent(0.1, vbs, 300))
+        fig15.add_trace(go.Scatter(
+            x=lengths*1e6,
+            y=vth_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+    
+    model.Leff = original_length  # Restore original value
+
+    fig15.update_layout(
+        title="Threshold Voltage vs Channel Length at Different Biases",
+        xaxis_title="Effective Channel Length (Leff) [μm]",
+        yaxis_title="Threshold Voltage (Vth) [V]",
+        legend_title="Body Bias"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Threshold Voltage vs Channel Length at Different Biases</h2>
+        {div15}
+    </div>
+    """.format(div15=fig15.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Plot 17: Effective gate voltage versus applied gate voltage at different gate oxide thickness
+    original_tox = model.Tox
+
+    fig17 = go.Figure()
+    for tox in tox_range:
+        model.Tox = tox
+        model.Cox = model.epsOx / tox  # Update Cox
+        vgsteff_values = []
+        for vgs in vgs_range:
+            vgsteff = model.calculate_Vgsteff(vgs, 300, 0.1, 0)
+            vgsteff_values.append(vgsteff/vgs if vgs != 0 else 0)
+
+        fig17.add_trace(go.Scatter(
+            x=vgs_range,
+            y=vgsteff_values,
+            name=f'Tox={tox*1e9:.1f}nm',
+            mode='lines'
+        ))
+    
+    model.Tox = original_tox  # Restore original value
+    model.Cox = model.epsOx / original_tox  # Restore Cox
+
+    fig17.update_layout(
+        title="Effective Gate Voltage Ratio vs Applied Gate Voltage",
+        xaxis_title="Applied Gate Voltage (Vgs) [V]",
+        yaxis_title="Vgseff/Vgs Ratio",
+        legend_title="Oxide Thickness"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Effective Gate Voltage Ratio vs Applied Gate Voltage</h2>
+        {div17}
+    </div>
+    """.format(div17=fig17.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Plot 19: Ids vs Vgs for different Vbs
+    fig19 = go.Figure()
+    vds_small = 0.1  # Linear region
+    
+    for vbs in vbs_range:
+        ids_values = [model.compute(vgs, vds_small, vbs, 300) for vgs in vgs_range]
+        fig19.add_trace(go.Scatter(
+            x=vgs_range,
+            y=ids_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+
+    fig19.update_layout(
+        title="Drain Current vs Gate Voltage at Different Body Biases",
+        xaxis_title="Gate Voltage (Vgs) [V]",
+        yaxis_title="Drain Current (Ids) [A]",
+        legend_title="Body Bias",
+        yaxis_type="log"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Drain Current vs Gate Voltage at Different Body Biases</h2>
+        {div19}
+    </div>
+    """.format(div19=fig19.to_html(full_html=False, include_plotlyjs='cdn'))
+
+
+
     # ------------------------------
 
     # Close HTML tags
