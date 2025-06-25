@@ -176,7 +176,6 @@ class BSIM4v4_7_Model:
         self.BDOS = 1.0                          # -, Density of states parameter
         self.MINV = 0.0                          # -, Moderate inversion parameter
         self.MINVCV = 0.0                        # -, Moderate inversion parameter for CV
-        
         # Gate tunneling current parameters
         self.AIGBACC = 1.0                       # -, Gate current parameter
         self.BIGBACC = 1.0                       # -, Gate current parameter
