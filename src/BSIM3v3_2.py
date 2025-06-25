@@ -130,12 +130,11 @@ class BSIM3v3_Model:
         self.Ngate    = 1e25                        # m-3,   Poly doping concentration
         self.Nds      = 1e26                        # m-3,   Source/drain doping concentration
         # Parasitic resistance
-        self.Rds      = 50.0                        # ohm,     Source-drain resistance
-        self.Rdsw     = 100.0                       # ohm,     Source/drain width resistance
-        self.Pr       = 0.5                         # -,      Parasitic resistance coefficient
-        self.Wr       = 0.5                         # -,     Width dependence coefficient
-        self.Prwb     = 0.5                         # -,     Body effect coefficient for width
-        self.Prwg     = 0.5                         # -,     Gate voltage effect on Rdsw
+        self.Rdsw     = 50.0                       # Typical value might be in the range of 50-200 ohm·µm for modern processes
+        self.Pr       = 1.0          # Could range from 0.5 to 2.0 depending on technology
+        self.Wr       = 1.0          # Often kept at 1.0 (linear width dependence)
+        self.Prwb     = 0.1        # Small value for body effect
+        self.Prwg     = 0.0       # Small value for gate voltage effect
         # Subthreshold parameters
         self.n        = 1.5                         # -,     Subthreshold swing coefficient
         self.Voff     = -0.08                       # V,     Offset voltage for subthreshold current
@@ -368,12 +367,38 @@ class BSIM3v3_Model:
         Returns:
             float: Saturation voltage in volts
         """
-        Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
-        Esat     = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
-        term1 = (Esat * self.Leff * (Vgsteff + 2 * self.v_t(T))) 
-        term2 = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff + 2 * self.v_t(T))
-        Vdsat = term1 / term2
-        
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        Rds         = self.calculate_Rds(Vds, Vgs, Vbs, T)  # Calculate bias-dependent source/drain resistance
+
+        if Rds == 0:
+            term1 = (Esat * self.Leff * (Vgsteff + 2 * self.v_t(T))) 
+            term2 = (self.calculate_Abulk(T) * Esat * self.Leff + Vgsteff + 2 * self.v_t(T))
+            Vdsat = term1 / term2
+        elif Rds > 0:
+
+                lamda        = self.A1 * Vgsteff + self.A2
+
+                term1        = self.calculate_Abulk(T)**2 * self.Weff * self.Vsat_T_dependent(T) * self.Cox * Rds
+                term2        = (1/lamda - 1) * self.calculate_Abulk(T)
+                a            = term1 + term2
+                
+                term3        = (Vgsteff + 2*self.v_t(T)) * (2/lamda - 1)
+                term4        = self.calculate_Abulk(T) * Esat * self.Leff
+                term5        = 3 * self.calculate_Abulk(T) * (Vgsteff + 2*self.v_t(T)) * self.Weff * self.Vsat_T_dependent(T) * self.Cox * Rds
+                b            = -(term3 + term4 + term5)
+                
+                term6        = (Vgsteff + 2*self.v_t(T)) * Esat * self.Leff
+                term7        = 2 * (Vgsteff + 2*self.v_t(T))**2 * self.Weff * self.Vsat_T_dependent(T) * self.Cox * Rds
+                c            = term6 + term7
+                
+                # Calculate discriminant
+                discriminant = b**2 - 4*a*c
+
+                if discriminant < 0:
+                    raise ValueError("Negative discriminant in Vdsat calculation")
+                Vdsat        = (-b - np.sqrt(discriminant)) / (2*a)
+    
         return Vdsat
 
     def Vsat_T_dependent(self,T):
@@ -453,16 +478,21 @@ class BSIM3v3_Model:
         """
         Vgsteff = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
         Esat     = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
-
+        Rds     = self.calculate_Rds(Vds, Vgs, Vbs, T)  # Calculate bias-dependent source/drain resistance
         mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
         Vb      = (Vgsteff + 2 * self.v_t(T)) / self.calculate_Abulk(T)
         I_dso   = mob_eff * self.Cox * (self.Weff / self.Leff) * Vgsteff * Vds * (1 - Vds / (2 * Vb)) / (1 + Vds / (Esat * self.Leff))
+        Qchs0 = self.Cox * Vgsteff
         # Add source-drain resistance effect (Eq. 3.3.5)
-        if Vds == 0:
+        if Rds == 0:
             # Handle the case where Vds is zero (maybe return 0 or a small value)
+            I_ds  = (self.Weff * mob_eff * Qchs0 * Vds * (1 - Vds / (2 * Vb))) / (self.Leff * (1 + Vds / (Esat * self.Leff)))
+        elif Rds > 0:
+            I_ds = I_dso / (1 + Rds * I_dso / Vds) #Extrinsic Case (Rds > 0)
+
+        if Vds == 0: 
             I_ds = 0
-        else:
-            I_ds = I_dso / (1 + self.Rds * I_dso / Vds) #Extrinsic Case (Rds > 0)
+
         return I_ds
     
     def calculate_saturation_current(self, Vgs, Vds, Vbs, T):
@@ -500,11 +530,11 @@ class BSIM3v3_Model:
         # Saturation current with all effects
         I_ds        = I_dsat * (1 + (Vds - Vdsat) / V_A) * (1 + (Vds - Vdsat) / V_ASCBE)
         return I_ds
-    
-    def calculate_Rds(self, Vgs, Vbs, T):
+
+    def calculate_Rds(self, Vds, Vgs, Vbs, T):
         """Calculate bias-dependent source/drain resistance."""
-        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
-        Rds         = self.Rdsw * (1 + self.Prwg * Vgsteff + self.Prwb*(np.sqrt(self.Phi_s(T)-Vbs) - np.sqrt(self.Phi_s(T))))/(1e6*self.Weff)**self.Wr
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbs)  # Recalculate Vgsteff for consistency
+        Rds         = self.Rdsw_T_dependent(T) * (1 + self.Prwg * Vgsteff + self.Prwb*(np.sqrt(self.Phi_s(T)-Vbs) - np.sqrt(self.Phi_s(T))))/(1e6*self.Weff)**self.Wr
         return Rds
 
     def Rdsw_T_dependent(self, T):
@@ -549,11 +579,11 @@ import os
 if __name__ == "__main__":
     model = BSIM3v3_Model()
     
-    vds_range = np.linspace(0, 10, 50)
-    vgs_range = np.linspace(-0.5, 5, 50)
-    temp_range = np.linspace(250, 400, 50)
+    vds_range = np.linspace(0, 10, 100)
+    vgs_range = np.linspace(-0.5, 5, 100)
+    temp_range = np.linspace(250, 400, 100)
     Vds = 0.1
-    Vbs = -3.3
+    Vbs = 0.0
 
     # Create HTML file with all plots
     html_file = "bsim3v3_plots.html"
