@@ -27,7 +27,7 @@ class BSIM3v3_Model:
     based on the given terminal voltages and physical parameters.
     
     The model includes:
-    - Threshold voltage calculation with short-channel, narrow width, and DIBL effects
+    - Threshold voltage calculation with short-channel, narrow width, and DIBL effects :Drain-Induced Barrier Lowering (DIBL)
     - Mobility degradation effects
     - Velocity saturation
     - Channel length modulation
@@ -89,20 +89,21 @@ class BSIM3v3_Model:
         self.A2       = 1.0                         # -,     Saturation voltage parameter
         self.B0       = 0.0                      # -,     Width effect on Abulk
         self.B1       = 0.0                     # -,     Width effect on Abulk
-        # Output resistance parameters
+        # DIBL and substrate effect parameters
         self.Pclm     = 1.3                         # -,     Channel length modulation coefficient
-        self.Pdiblc1   = 0.5                         # -,     DIBL coefficient for output resistance
-        self.Pdiblc2   = 0.39                        # -,     DIBL coefficient for output resistance
-        self.Pdiblb   =  0.0                       # -,     Body effect on DIBL for output resistance
         self.Drout    = 0.56                         # -,     Output resistance DIBL coefficient
         self.Pvag     = 0.0                       # 1/V,   Gate voltage effect on output resistance
-        self.Alpha0   = 0.01                        # -,     Substrate current parameter
-        self.Alpha1   = 0.01                        # -,     Substrate current parameter
-        self.Beta0    = 30.0                        # V/m,   Substrate current parameter
-        # DIBL and substrate effect parameters
-        self.Dsub     = self.Drout                         # -,     DIBL coefficient in subthreshold region
-        self.Eta0     = 0.08                         # -,     DIBL coefficient in strong inversion
-        self.Etab     = -0.07                       # -,     Body bias effect on DIBL coefficient
+        self.Alpha0   = 1.2e-6                        # -,     Substrate current parameter
+        self.Alpha1   = 0.5e-6                        # -,     Substrate current parameter
+        self.Beta0    = 3.0                        # V/m,   Substrate current parameter
+        self.Dvt0 = 2.5            # Increased from 2.2 (short-channel effect coefficient)
+        self.Dvt1 = 0.6            # Increased from 0.53
+        self.Dsub = 1.2            # Increased from 0.56 (DIBL in subthreshold)
+        self.Eta0 = 0.15           # Increased from 0.08 (DIBL in strong inversion)
+        self.Etab = -0.12          # Increased from -0.07 (body effect on DIBL)
+        self.Pdiblc1 = 0.45        # Adjusted DIBL coefficient
+        self.Pdiblc2 = 0.45        # Matched to Pdiblc1
+        self.Pdiblb = -0.08        # Added body bias effect on DIBL
         # Geometry parameters (180nm process)
         self.Leff     = 180e-9                      # m,     Effective channel length
         self.Weff     = 1e-6                        # m,     Effective channel width (1um)
@@ -253,6 +254,7 @@ class BSIM3v3_Model:
         Returns:
             float: Threshold voltage in volts
         """
+        
         # Effective body-source voltage with smoothing (Eq. 2.1.26)
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
         Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
@@ -601,6 +603,57 @@ class BSIM3v3_Model:
         
         return Ids
 
+    def calculate_substrate_current(self,Vgs,Vds, Vbs, T):
+        """
+        Calculate substrate current (I_sub) based on BSIM3v3.2.1 model.
+        
+        Parameters:
+        alpha_0, alpha_1, beta_0: Model parameters (impact ionization coefficients)
+        L_eff: Effective channel length
+        V_d: Drain voltage
+        V_deqf: Effective drain voltage
+        I_dio: Drain current
+        R_d: Drain resistance
+        
+        Returns:
+        Substrate current I_sub
+        """
+        # Calculate 1/VASCRE (Equation 3.5.7)
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
+        lamda       = self.A1 * Vgsteff + self.A2
+        self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
+        Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        theta_rout  =   self.Pdiblc1 * (
+                        np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 
+                        2 * np.exp(-self.Drout * self.Leff / self.lit)
+                        ) + self.Pdiblc2
+        VADIBLC     =   (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * Vbseff)) *        \
+                        (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (self.calculate_Abulk(T,Vbs) * Vdsat + Vgsteff + 2 * self.v_t(T))))
+
+        VACLM       =   ((self.calculate_Abulk(T,Vbs) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T,Vbs) * Esat * self.lit)) * \
+                        (Vds - Vdsat)
+
+        VAsat      =   ((Esat * self.Leff) + Vdsat + (2 * Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * Vgsteff) * \
+                        (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (2 * (Vgsteff + 2 * self.v_t(T)))))) / \
+                        ((2/lamda) - 1 + (Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * self.calculate_Abulk(T,Vbs)))
+        VA         =   VAsat + (1 + ((self.Pvag * Vgsteff) / (Esat * self.Leff))) * ((1 / VACLM) + (1 / VADIBLC))**-1
+        I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T,Vbs) * Vdsat)
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T)
+        Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T, Vds)
+        Vdseff      = Vdsat - 1/2 * (Vdsat - Vds - delta + np.sqrt((Vdsat - Vds - delta)**2 + 4 * delta * Vdsat))
+        
+        term1      = (self.Alpha0 + (self.Alpha1 * self.Leff)) / self.Leff
+        term2      = Vds - Vdseff
+        term3      = np.exp(-self.Beta0 / term2) 
+        term4      = I_dsat / (1 + (Rds * I_dsat) / Vdseff) 
+        term5      = (1 + (term2 / VA))
+        I_sub      = term1 * term2 * term3 * term4 * term5
+
+        return I_sub
+
     def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
         """Calculate drain current for given bias conditions.
         
@@ -924,7 +977,127 @@ if __name__ == "__main__":
         {div9}
     </div>
     """.format(div9=fig9.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Test 10: Vdsat vs Vgs for different Vbs   
+    fig10 = go.Figure()
+    for vbs in [0, -1, -2]:
+        vdsat_values = [model.calculate_Vdsat(vgs, vbs, 300, Vds) for vgs in vgs_range]
+        fig10.add_trace(go.Scatter(
+            x=vgs_range,
+            y=vdsat_values,
+            name=f'Vbs={vbs}V',
+            mode='lines'
+        ))
+    fig10.update_layout(
+        title="Saturation Voltage vs Gate-Source Voltage",
+        xaxis_title="Vgs (V)",
+        yaxis_title="Vdsat (V)",
+
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Saturation Voltage vs Gate-Source Voltage</h2>
+        {div10} 
+    </div>
+    """.format(div10=fig10.to_html(full_html=False, include_plotlyjs='cdn'))
+    # ------------------------------
+    # Test 11: Vdsat vs Temperature for different Vgs
+    fig11 = go.Figure()
+    for vgs in np.linspace(0, 5, 5):  # F
+        vdsat_values = [model.calculate_Vdsat(vgs, Vbs, T, Vds) for T in temp_range]
+        fig11.add_trace(go.Scatter(
+            x=temp_range,
+            y=vdsat_values,
+            name=f'Vgs={vgs:.1f}V',
+            mode='lines',
+            line=dict(width=2),
+            opacity=0.8
+        ))
+    fig11.update_layout(
+        title="Saturation Voltage vs Temperature",
+        xaxis_title="Temperature (K)",
+        yaxis_title="Vdsat (V)",
+
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Saturation Voltage vs Temperature</h2>
+        {div11}
+    </div>
+    """.format(div11=fig11.to_html(full_html=False, include_plotlyjs='cdn'))
+    # ------------------------------
     
+    # ------------------------------
+    # Test 12: DIBL Effect - Vth vs Vds and ∂Vth/∂Vds
+    vds_range_dibl = np.linspace(0.1, 5, 100)  
+    vth_values = np.array([model.vth_T_dependent(vds, 0, 300) for vds in vds_range_dibl])
+    # Calculate numerical derivative ∂Vth/∂Vds
+    dVth_dVds = np.gradient(vth_values, vds_range_dibl)
+    fig12 = go.Figure()
+    # Add Vth trace (primary y-axis)
+    fig12.add_trace(go.Scatter(
+        x=vds_range_dibl,
+        y=vth_values,
+        name="Threshold Voltage (Vth)",
+        mode='lines',
+        line=dict(width=2, color='blue'),
+        yaxis='y1'
+    ))
+    
+    # Add ∂Vth/∂Vds trace (secondary y-axis)
+    fig12.add_trace(go.Scatter(
+        x=vds_range_dibl,
+        y=dVth_dVds,
+        name="DIBL Coefficient (∂Vth/∂Vds)",
+        mode='lines',
+        line=dict(width=2, color='red', dash='dot'),
+        yaxis='y2'
+    ))
+    
+    # Update layout with dual axes
+    fig12.update_layout(
+        title="<b></b><br>Threshold Voltage vs Drain Voltage and DIBL Coefficient",
+        xaxis_title="Drain-Source Voltage (V<sub>DS</sub>) [V]",
+        yaxis=dict(
+            title="Threshold Voltage (V<sub>th</sub>) [V]",
+            range=[min(vth_values)*0.95, max(vth_values)*1.05]
+        ),
+        yaxis2=dict(
+            title="DIBL Coefficient (∂V<sub>th</sub>/∂V<sub>DS</sub>) [V/V]",
+            overlaying="y",
+            side="right",
+            range=[min(dVth_dVds)*1.1, max(dVth_dVds)*1.1]  # Add some padding
+        ),
+        legend=dict(x=0.05, y=0.95),
+        hovermode="x unified",
+        template="plotly_white",
+        margin=dict(t=100)
+    )
+    
+    # Add annotation explaining DIBL effect
+    fig12.add_annotation(
+        x=0.5,
+        y=0.1,
+        xref="paper",
+        yref="paper",
+        text="DIBL (Drain-Induced Barrier Lowering) shows V<sub>th</sub> reduction at higher V<sub>DS</sub>",
+        showarrow=False,
+        font=dict(size=11),
+        bgcolor="white"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>DIBL Effect Analysis</h2>
+        {div12}
+    </div>
+    """.format(div12=fig12.to_html(full_html=False, include_plotlyjs='cdn'))
+
+
+    
+    # ------------------------------
+
     # Close HTML tags
     html_content += """
     </body>
