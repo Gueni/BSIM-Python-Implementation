@@ -536,6 +536,47 @@ class BSIM3v3_Model:
         Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance
 
         # Calculate 1/VASCRE (Equation 3.5.7)
+        inv_VASCBE      =   (self.Pscbe2 / self.Leff) * np.exp((-self.Pscbe1*self.lit) / (Vds - Vdsat))
+        VASCBE          =   1 / inv_VASCBE
+
+        theta_rout      =   self.Pdiblc1 * (
+                            np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 
+                            2 * np.exp(-self.Drout * self.Leff / self.lit)
+                            ) + self.Pdiblc2
+
+        VADIBLC         =   (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * Vbseff)) *        \
+                            (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (self.calculate_Abulk(T,Vbs) * Vdsat + Vgsteff + 2 * self.v_t(T))))
+
+        VACLM           =   ((self.calculate_Abulk(T,Vbs) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T,Vbs) * Esat * self.lit)) * \
+                            (Vds - Vdsat)
+
+        VAsat           =   ((Esat * self.Leff) + Vdsat + (2 * Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * Vgsteff) * \
+                            (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (2 * (Vgsteff + 2 * self.v_t(T)))))) / \
+                            ((2/lamda) - 1 + (Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * self.calculate_Abulk(T,Vbs)))
+
+        VA              =   VAsat + (1 + ((self.Pvag * Vgsteff) / (Esat * self.Leff))) * ((1 / VACLM) + (1 / VADIBLC))**-1
+
+        I_dsat          = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T,Vbs) * Vdsat)
+        denominator     = 1 + (Rds * I_dsat) / Vdsat
+        first_term      = 1 + (Vds - Vdsat) / VA
+        second_term     = 1 + (Vds - Vdsat) / VASCBE
+        I_ds            = (I_dsat / denominator) * first_term * second_term
+            
+        return I_ds
+
+    def Single_Current_Expression(self, Vgs, Vds, Vbs, T):
+        """Single Current Expression for All Operating Regimes of Vgs and Vds"""
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
+        self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T)
+        lamda       = self.A1 * Vgsteff + self.A2
+        Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T, Vds)
+        Vdseff      = Vdsat - 1/2 * (Vdsat - Vds - delta + np.sqrt((Vdsat - Vds - delta)**2 + 4 * delta * Vdsat))
+        # Calculate 1/VASCRE (Equation 3.5.7)
         inv_VASCBE  = (self.Pscbe2 / self.Leff) * np.exp((-self.Pscbe1*self.lit) / (Vds - Vdsat))
         VASCBE      = 1 / inv_VASCBE
 
@@ -543,7 +584,6 @@ class BSIM3v3_Model:
                         np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 
                         2 * np.exp(-self.Drout * self.Leff / self.lit)
                         ) + self.Pdiblc2
-
         VADIBLC     =   (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * Vbseff)) *        \
                         (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (self.calculate_Abulk(T,Vbs) * Vdsat + Vgsteff + 2 * self.v_t(T))))
 
@@ -553,23 +593,14 @@ class BSIM3v3_Model:
         VAsat      =   ((Esat * self.Leff) + Vdsat + (2 * Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * Vgsteff) * \
                         (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (2 * (Vgsteff + 2 * self.v_t(T)))))) / \
                         ((2/lamda) - 1 + (Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * self.calculate_Abulk(T,Vbs)))
-
         VA         =   VAsat + (1 + ((self.Pvag * Vgsteff) / (Esat * self.Leff))) * ((1 / VACLM) + (1 / VADIBLC))**-1
-
-       
-        
-        # Calculate the drain current (Ids)
         I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T,Vbs) * Vdsat)
-        denominator     = 1 + (Rds * I_dsat) / Vdsat
-        first_term      = 1 + (Vds - Vdsat) / VA
-        second_term     = 1 + (Vds - Vdsat) / VASCBE
+        Ids         = (I_dsat / (1 + (Rds * I_dsat) / Vdseff)) * \
+                      (1 + (Vds - Vdseff) / VA) * \
+                      (1 + (Vds - Vdseff) / VASCBE)
+        
+        return Ids
 
-        I_ds = (I_dsat / denominator) * first_term * second_term
-            
-
-        return I_ds
-
-   
     def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
         """Calculate drain current for given bias conditions.
         
