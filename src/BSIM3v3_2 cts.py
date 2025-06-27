@@ -1,121 +1,177 @@
-
+#!/usr/bin/env python
+# coding=utf-8
+#? -------------------------------------------------------------------------------
+#?
+#?                 ______  ____  _______  _____
+#?                / __ \ \/ /  |/  / __ \/ ___/
+#?               / /_/ /\  / /|_/ / / / /\__ \
+#?              / ____/ / / /  / / /_/ /___/ /
+#?             /_/     /_/_/  /_/\____//____/
+#?
+#? Name:        BSIM3v3_2.py
+#? Purpose:     Compute drain current using the BSIM model
+#?
+#? Author:      Mohamed Gueni (mohamedgueni@outlook.com)
+#? Based on:    BSIM3v3_2 Manual 
+#? Created:     21/05/2025
+#? Licence:     Refer to the LICENSE file
 #? -------------------------------------------------------------------------------
 from matplotlib import pyplot as plt
 import numpy as np
 #? -------------------------------------------------------------------------------
 class BSIM3v3_Model:
-    def __init__(self):
+    """BSIM3v3 MOSFET model implementation for circuit simulation.
     
+    This class implements the BSIM3v3 (Berkeley Short-channel IGFET Model) version 3.3
+    for MOSFET transistors. It calculates drain current (Ids) and other characteristics
+    based on the given terminal voltages and physical parameters.
+    
+    The model includes:
+    - Threshold voltage calculation with short-channel, narrow width, and DIBL effects :Drain-Induced Barrier Lowering (DIBL)
+    - Mobility degradation effects
+    - Velocity saturation
+    - Channel length modulation
+    - Subthreshold conduction
+    - Temperature effects
+    - Parasitic resistance effects
+    
+    Attributes:
+        Various physical constants and model parameters initialized in __init__
+    """
+    
+    def __init__(self):
+        """Initialize BSIM3v3 model with default parameters for 180nm NMOS transistor.
+        
+        Sets up:
+        - Physical constants (permittivity, charge, etc.)
+        - Threshold voltage related parameters
+        - Mobility parameters
+        - Velocity saturation parameters
+        - Output resistance parameters
+        - Geometry parameters
+        - Doping concentrations
+        - Temperature parameters
+        - Subthreshold parameters
+        """
         # Physical constants (SI units)
-        self.epsSi    = 11.7 * 8.854e-12            # F/m,   Silicon permittivity
-        self.epsOx    = 3.9 * 8.854e-12             # F/m,   Silicon dioxide permittivity
-        self.q        = 1.602e-19                   # C,     Electron charge
-        self.k_B      = 1.38e-23                    # J/K,   Boltzmann constant
+        self.epsSi    = 11.7 * 8.854e-12       # F/m,   Silicon permittivity
+        self.epsOx    = 3.9 * 8.854e-12        # F/m,   Silicon dioxide permittivity
+        self.q        = 1.602e-19              # C,     Electron charge
+        self.k_B      = 1.38e-23               # J/K,   Boltzmann constant
+        self.NI0      = 1.45e16                # m-3,   Intrinsic carrier concentration at 300K
+        
         # Threshold voltage related parameters
-        self.Vth0     = 0.40                        # V,     Zero-bias threshold voltage
-        self.K1       = 0.5                         # √V,    First body effect coefficient
-        self.K2       = 0.01                        # -,     Second body effect coefficient
-        self.K3       = 80.0                         # -,     Narrow width effect coefficient
-        self.K3b      = 0                       # -,     Body effect on narrow width coefficient
-        self.Dvt0     = 2.2                         # -,     Short-channel effect coefficient at Vbs=0
-        self.Dvt1     = 0.53                         # -,     Short-channel effect coefficient
-        self.Dvt2     = -0.032                       # 1/V,   Short-channel effect coefficient for body bias
-        self.Dvt0w    = 0.0                         # -,     Narrow width effect coefficient at Vbs=0
-        self.Dvt1w    = 5.3e6                       # -,     Narrow width effect coefficient
-        self.Dvt2w    = -0.032                      # 1/V,   Narrow width effect coefficient for body bias
-        self.Nlx      = 1.47e-7                      # m,     Lateral non-uniform doping parameter
-        self.W0       = 2.5e-6                      # m,     Narrow width parameter
-
-        # Mobility parameters (180nm NMOS)
-        self.mobMod   = 3                           # -,     Mobility model selector
-        self.U0       = 0.067                        # m2/V·s, Low-field mobility
-        self.Ua       = 2.25E-9                       # m/V,   First-order mobility degradation coefficient
-        self.Ub       = 5.87E-19                       # (m/V)2, Second-order mobility degradation coefficient
-        self.Uc       = -0.046                        # -,     Body-effect coefficient for mobility degradation mobMod =1, 2:-4.65e-11 mobMod=3:-0.046
-        self.Ua1       = 4.31E-9                       # m/V,   First-order mobility degradation coefficient
-        self.Ub1       = -7.61E-18                       # (m/V)2, Second-order mobility degradation coefficient
-        self.Uc1       = -0.056                        # -,     Body-effect coefficient for mobility degradation mob-Mod=1,2:-5.6E-11 mob-Mod=3:-0.056
+        self.Vth0     = 0.40                   # V,     Zero-bias threshold voltage
+        self.K1       = 0.5                    # √V,    First body effect coefficient
+        self.K2       = 0.01                   # -,     Second body effect coefficient
+        self.K3       = 80.0                   # -,     Narrow width effect coefficient
+        self.K3b      = 0                      # -,     Body effect on narrow width coefficient
+        self.Dvt0     = 2.2                    # -,     Short-channel effect coefficient at Vbs=0
+        self.Dvt1     = 0.53                   # -,     Short-channel effect coefficient
+        self.Dvt2     = -0.032                 # 1/V,   Short-channel effect coefficient for body bias
+        self.Dvt0w    = 0.0                    # -,     Narrow width effect coefficient at Vbs=0
+        self.Dvt1w    = 5.3e6                  # -,     Narrow width effect coefficient
+        self.Dvt2w    = -0.032                 # 1/V,   Narrow width effect coefficient for body bias
+        self.Nlx      = 1.47e-7                # m,     Lateral non-uniform doping parameter
+        self.W0       = 2.5e-6                 # m,     Narrow width parameter
+        self.Voff     = -0.08                  # V,     Offset voltage for subthreshold current
+        self.Keta     = -0.047                 # -,     Body effect coefficient for Voff
+        
+        # Mobility parameters
+        self.mobMod   = 3                      # -,     Mobility model selector
+        self.U0       = 0.35                   # m²/V·s, Low-field mobility (final tuned value)
+        self.Ua       = 2.25e-9                # m/V,   First-order mobility degradation coefficient
+        self.Ub       = 5.87e-19               # (m/V)², Second-order mobility degradation coefficient
+        self.Uc       = -0.046                 # -,     Body-effect coefficient for mobility
+        self.Ua1      = 4.31e-9                # m/V,   First-order mobility degradation coefficient
+        self.Ub1      = -7.61e-18              # (m/V)², Second-order mobility degradation coefficient
+        self.Uc1      = -0.056                 # -,     Body-effect coefficient for mobility
+        
         # Velocity saturation parameters
-        self.VSAT     = 8.0E4                       # m/s,   Saturation velocity
-        self.A0       = 1.0                         # -,     Bulk charge effect coefficient
-        self.A1       = 0.0                        # -,     Saturation voltage parameter
-        self.A2       = 1.0                         # -,     Saturation voltage parameter
-        self.B0       = 0.0                      # -,     Width effect on Abulk
-        self.B1       = 0.0                     # -,     Width effect on Abulk
-        # Output resistance parameters
-        self.Pclm     = 1.3                         # -,     Channel length modulation coefficient
-        self.Pdiblc1   = 0.5                         # -,     DIBL coefficient for output resistance
-        self.Pdiblc2   = 0.39                        # -,     DIBL coefficient for output resistance
-        self.Pdiblb   =  0.0                       # -,     Body effect on DIBL for output resistance
-        self.Drout    = 0.56                         # -,     Output resistance DIBL coefficient
-        self.Pvag     = 0.0                       # 1/V,   Gate voltage effect on output resistance
-        self.Alpha0   = 0.01                        # -,     Substrate current parameter
-        self.Alpha1   = 0.01                        # -,     Substrate current parameter
-        self.Beta0    = 30.0                        # V/m,   Substrate current parameter
+        self.VSAT     = 5.0e5                  # m/s,   Saturation velocity (near ballistic limit)
+        self.A0       = 1.0                    # -,     Bulk charge effect coefficient
+        self.A1       = 0.0                    # -,     Saturation voltage parameter
+        self.A2       = 1.0                    # -,     Saturation voltage parameter
+        self.B0       = 0.0                    # -,     Width effect on Abulk
+        self.B1       = 0.0                    # -,     Width effect on Abulk
+        self.At       = 4.0e4                  # m/s,   Velocity saturation temperature coefficient
+        
         # DIBL and substrate effect parameters
-        self.Dsub     = self.Drout                         # -,     DIBL coefficient in subthreshold region
-        self.Eta0     = 0.08                         # -,     DIBL coefficient in strong inversion
-        self.Etab     = -0.07                       # -,     Body bias effect on DIBL coefficient
-        # Geometry parameters (180nm process)
-        self.Leff     = 180e-9                      # m,     Effective channel length
-        self.Weff     = 1e-6                        # m,     Effective channel width (1um)
-        self.Ldrawn   = 180e-9                      # m,     Drawn channel length
-        self.Wdrawn   = 1e-6                        # m,     Drawn channel width
-        self.Xj       = 100e-9                      # m,     Junction depth
-        self.Tox      = 1.0e-9                      # m,     Oxide thickness
-        self.Toxm     = 1.0e-9                      # m,     Oxide thickness for modeling
-        self.Wint     = 0.0                         # m,     Internal width for narrow width effects
-        self.Wl       = 0.0                         # m,     Length dependence coefficient for width
-        self.Ww       = 0.0                         # m,     Width dependence coefficient for width
-        self.Wln      = 0.0                         # -,     Length dependence exponent for width
-        self.Wwn      = 0.0                         # -,     Width dependence exponent for width
-        self.Lint     = 0.0                         # m,     Internal length for narrow width effects
-        self.Ll       = 0.0                         # m,     Length dependence coefficient for length
-        self.Lw       = 0.0                         # m,     Width dependence coefficient for length
-        self.Lln      = 0.0                         # -,     Length dependence exponent for length
-        self.Lwn      = 0.0                         # -,     Width dependence exponent for length
+        self.Pclm     = 1.1                    # -,     Channel length modulation coefficient
+        self.Drout    = 0.56                   # -,     Output resistance DIBL coefficient
+        self.Pvag     = 1e6                    # 1/V,   Gate voltage effect on output resistance
+        self.Alpha0   = 1.2e-6                 # -,     Substrate current parameter
+        self.Alpha1   = 0.5e-6                 # -,     Substrate current parameter
+        self.Beta0    = 3.0                    # V/m,   Substrate current parameter
+        self.Dsub     = 1.2                    # -,     DIBL in subthreshold
+        self.Eta0     = 0.15                   # -,     DIBL in strong inversion
+        self.Etab     = -0.12                  # -,     Body effect on DIBL
+        self.Pdiblc1  = 0.45                   # -,     DIBL coefficient
+        self.Pdiblc2  = 0.45                   # -,     DIBL coefficient
+        self.Pdiblb   = -0.08                  # -,     Body bias effect on DIBL
+        
+        # Geometry parameters
+        self.Leff     = 50e-9                  # m,     Effective channel length (50nm)
+        self.Weff     = 2000e-6                # m,     Effective channel width (2mm)
+        self.Ldrawn   = 180e-9                 # m,     Drawn channel length
+        self.Wdrawn   = 1e-6                   # m,     Drawn channel width
+        self.Xj       = 100e-9                 # m,     Junction depth
+        self.Tox      = 1.2e-9                 # m,     Oxide thickness (1.2nm)
+        self.Toxm     = 1.2e-9                 # m,     Oxide thickness for modeling
+        self.Cox      = self.epsOx/self.Tox    # F/m²,  Oxide capacitance (~0.029 F/m²)
+        
+        # Geometry adjustment parameters
+        self.Wint     = 0.0                    # m,     Internal width for narrow width effects
+        self.Wl       = 0.0                    # m,     Length dependence coefficient for width
+        self.Ww       = 0.0                    # m,     Width dependence coefficient for width
+        self.Wln      = 0.0                    # -,     Length dependence exponent for width
+        self.Wwn      = 0.0                    # -,     Width dependence exponent for width
+        self.Lint     = 0.0                    # m,     Internal length for narrow width effects
+        self.Ll       = 0.0                    # m,     Length dependence coefficient for length
+        self.Lw       = 0.0                    # m,     Width dependence coefficient for length
+        self.Lln      = 0.0                    # -,     Length dependence exponent for length
+        self.Lwn      = 0.0                    # -,     Width dependence exponent for length
         self.dW       = self.Wint + self.Wl/self.Ldrawn**self.Wln + self.Ww/self.Wdrawn**self.Wwn
         self.dL       = self.Lint + self.Ll/self.Ldrawn**self.Lln + self.Lw/self.Wdrawn**self.Lwn
-        self.Leff     = max(180e-9, self.Ldrawn - 2*self.dL)  # Prevent negative values
-        self.Weff     = max(180e-9, self.Wdrawn - 2*self.dW)
+        
         # Doping concentrations
-        self.Nch      = 1.0e23                      # m-3,   Channel doping concentration
-        self.Ngate    = 1e25                        # m-3,   Poly doping concentration
-        self.Nds      = 1e26                        # m-3,   Source/drain doping concentration
+        self.Nch      = 5e23                   # m-3,   Channel doping concentration
+        self.Ngate    = 1e25                   # m-3,   Poly doping concentration
+        self.Nds      = 1e26                   # m-3,   Source/drain doping concentration
+        
         # Parasitic resistance
-        self.Rdsw     = 50.0                       # Typical value might be in the range of 50-200 ohm·µm for modern processes
-        self.Pr       = 1.0          # Could range from 0.5 to 2.0 depending on technology
-        self.Wr       = 1.0          # Often kept at 1.0 (linear width dependence)
-        self.Prwb     = 0.1        # Small value for body effect
-        self.Prwg     = 0.0       # Small value for gate voltage effect
+        self.Rdsw     = 0.5                    # Ω·µm,  Source/drain resistance (low for high current)
+        self.Pr       = 1.0                    # -,     Resistance prefactor
+        self.Wr       = 1.0                    # -,     Width dependence for resistance
+        self.Prwb     = 0.1                    # -,     Body effect on resistance
+        self.Prwg     = 0.0                    # -,     Gate effect on resistance
+        
         # Subthreshold parameters
-        self.n        = 1.5                         # -,     Subthreshold swing coefficient
-        self.Voff     = -0.08                       # V,     Offset voltage for subthreshold current
-        self.Keta     = -0.047                      # -,     Body effect coefficient for Voff
-        self.delta    = 0.01                        # -,     Smoothing parameter for Voff
+        self.n        = 1.5                    # -,     Subthreshold swing coefficient
+        self.delta    = 0.005                  # -,     Smoothing parameter
+        self.Nfactor  = 0                      # -,     Subthreshold slope factor
+        
         # Temperature parameters
-        self.Tnom     = 300.0                       # K,     Nominal temperature
-        self.Kt1      = -0.15                       # V,     Temperature coefficient for Vth
-        self.Kt1l     = 1e-9                        # V·m,   Temperature coefficient for Vth
-        self.Kt2      = 0.03                        # -,     Temperature coefficient for Vth
-        self.Ute      = -1.8                        # -,     Mobility temperature exponent
-        self.At       = 4.0e4                       # m/s,   Velocity saturation temperature coefficient
-        self.Ags      = 0.0                         # -,     Body effect coefficient for bulk charge
+        self.Tnom     = 300.0                  # K,     Nominal temperature
+        self.Kt1      = -0.15                  # V,     Temperature coefficient for Vth
+        self.Kt1l     = 1e-9                   # V·m,   Temperature coefficient for Vth
+        self.Kt2      = 0.03                   # -,     Temperature coefficient for Vth
+        self.Ute      = -1.8                   # -,     Mobility temperature exponent
+        self.Ags      = 0.0                    # -,     Body effect coefficient for bulk charge
+        
         # Additional parameters
-        self.Pscbe1   = 4.24E8                      # -,     Substrate current body-effect coefficient 1
-        self.Pscbe2   = 1.0E-5                      # -,     Substrate current body-effect coefficient 2
-        # State variables
-        self.Cit      = 0.0                         # F/m2,  Interface trap capacitance
-        self.Citd     = 0                         # F/m2,  Interface trap capacitance derivative
-        self.Citb     = 0                         # F/m2,  Interface trap capacitance body effect
-        self.Nfactor  = 0                        # -,     Subthreshold slope factor
-        self.NI0      = 1.45e16                     # m-3,   Intrinsic carrier concentration at 300K
-        self.NITEXP   = 1.5                         # -,     Exponent for temperature dependence of ni
-        self.Cox      = self.epsOx / self.Tox       # F/m², Oxide capacitance per unit area
-        self.Cdsc     = 0                       # Axial capacitance (F)
-        self.Cdscd    = 0                       # Drain-bias sensitivity of Cdsc F/Vm2
-        self.Cdscb    = 0                       # Body-bias sensitivity of Cdsc F/Vm2
-
+        self.Pscbe1   = 4.24e8                 # -,     Substrate current body-effect coefficient 1
+        self.Pscbe2   = 1.0e-5                 # -,     Substrate current body-effect coefficient 2
+        self.NITEXP   = 1.5                    # -,     Exponent for temperature dependence of ni
+        
+        # Capacitance parameters
+        self.Cit      = 0.0                    # F/m²,  Interface trap capacitance
+        self.Citd     = 0                      # F/m²,  Interface trap capacitance derivative
+        self.Citb     = 0                      # F/m²,  Interface trap capacitance body effect
+        self.Cdsc     = 0                      # F,     Axial capacitance
+        self.Cdscd    = 0                      # F/Vm², Drain-bias sensitivity of Cdsc
+        self.Cdscb    = 0                      # F/Vm², Body-bias sensitivity of Cdsc
+        self.Abulk    = 0.8                    # -,     Bulk charge effect coefficient
 
     def ni(self, T):
         """Calculate intrinsic carrier concentration (ni) based on temperature.
@@ -206,6 +262,7 @@ class BSIM3v3_Model:
         Returns:
             float: Threshold voltage in volts
         """
+        
         # Effective body-source voltage with smoothing (Eq. 2.1.26)
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
         Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
@@ -423,6 +480,8 @@ class BSIM3v3_Model:
         Returns:
             float: Subthreshold drain current in amperes
         """
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
         Vth     = self.vth_T_dependent(Vds, Vbs, T)  
         Vgst    = Vgs - Vth
         mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
@@ -455,7 +514,7 @@ class BSIM3v3_Model:
             # Handle the case where Vds is zero (maybe return 0 or a small value)
             I_ds  = (self.Weff * mob_eff * Qchs0 * Vds * (1 - Vds / (2 * Vb))) / (self.Leff * (1 + Vds / (Esat * self.Leff)))
         elif Rds > 0:
-            I_ds = I_dso / (1 + Rds * I_dso / Vds) #Extrinsic Case (Rds > 0)
+            I_ds = I_dso / (1 + ((Rds * I_dso) / Vds)) #Extrinsic Case (Rds > 0)
 
         if Vds == 0: 
             I_ds = 0
@@ -554,6 +613,57 @@ class BSIM3v3_Model:
         
         return Ids
 
+    def calculate_substrate_current(self,Vgs,Vds, Vbs, T):
+        """
+        Calculate substrate current (I_sub) based on BSIM3v3.2.1 model.
+        
+        Parameters:
+        alpha_0, alpha_1, beta_0: Model parameters (impact ionization coefficients)
+        L_eff: Effective channel length
+        V_d: Drain voltage
+        V_deqf: Effective drain voltage
+        I_dio: Drain current
+        R_d: Drain resistance
+        
+        Returns:
+        Substrate current I_sub
+        """
+        # Calculate 1/VASCRE (Equation 3.5.7)
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
+        lamda       = self.A1 * Vgsteff + self.A2
+        self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
+        Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
+        theta_rout  =   self.Pdiblc1 * (
+                        np.exp(-self.Drout * self.Leff / (2 * self.lit)) + 
+                        2 * np.exp(-self.Drout * self.Leff / self.lit)
+                        ) + self.Pdiblc2
+        VADIBLC     =   (Vgsteff + 2 * self.v_t(T)) / (theta_rout * (1 + self.Pdiblb * Vbseff)) *        \
+                        (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (self.calculate_Abulk(T,Vbs) * Vdsat + Vgsteff + 2 * self.v_t(T))))
+
+        VACLM       =   ((self.calculate_Abulk(T,Vbs) * Esat * self.Leff + Vgsteff) / (self.Pclm * self.calculate_Abulk(T,Vbs) * Esat * self.lit)) * \
+                        (Vds - Vdsat)
+
+        VAsat      =   ((Esat * self.Leff) + Vdsat + (2 * Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * Vgsteff) * \
+                        (1 - ((self.calculate_Abulk(T,Vbs) * Vdsat) / (2 * (Vgsteff + 2 * self.v_t(T)))))) / \
+                        ((2/lamda) - 1 + (Rds * self.Vsat_T_dependent(T) * self.Cox * self.Weff * self.calculate_Abulk(T,Vbs)))
+        VA         =   VAsat + (1 + ((self.Pvag * Vgsteff) / (Esat * self.Leff))) * ((1 / VACLM) + (1 / VADIBLC))**-1
+        I_dsat      = self.Weff * self.VSAT * self.Cox * (Vgsteff - self.calculate_Abulk(T,Vbs) * Vdsat)
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T)
+        Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbs, T, Vds)
+        Vdseff      = Vdsat - 1/2 * (Vdsat - Vds - delta + np.sqrt((Vdsat - Vds - delta)**2 + 4 * delta * Vdsat))
+        
+        term1      = (self.Alpha0 + (self.Alpha1 * self.Leff)) / self.Leff
+        term2      = Vds - Vdseff
+        term3      = np.exp(-self.Beta0 / term2) 
+        term4      = I_dsat / (1 + (Rds * I_dsat) / Vdseff) 
+        term5      = (1 + (term2 / VA))
+        I_sub      = term1 * term2 * term3 * term4 * term5
+
+        return I_sub
+
     def compute(self, Vgs, Vds, Vbs=0.0, T=300.0):
         """Calculate drain current for given bias conditions.
         
@@ -590,11 +700,18 @@ import os
 if __name__ == "__main__":
     model = BSIM3v3_Model()
     
-    vds_range = np.linspace(0, 10, 100)
-    vgs_range = np.linspace(-0.5, 5, 100)
-    temp_range = np.linspace(250, 400, 100)
-    Vds = 0.1
-    Vbs = 0.0
+    # Declare all ranges at the top
+    vds_range = np.linspace(0, 10, 100)          # Drain-source voltage range
+    vgs_range = np.linspace(-0.5, 15, 100)       # Gate-source voltage range
+    temp_range = np.linspace(250, 400, 100)      # Temperature range
+    vbs_range = np.linspace(-3, 0, 5)            # Body bias range
+    lengths = np.linspace(0.18e-6, 1e-6, 50)     # Channel length range
+    tox_range = np.linspace(1e-9, 5e-9, 5)       # Oxide thickness range
+    
+    # Common test conditions
+    Vds = 0.1      # Default drain voltage for some tests
+    Vbs = 0.0      # Default body bias for some tests
+    T = 300        # Default temperature (K)
 
     # Create HTML file with all plots
     html_file = "bsim3v3_plots.html"
@@ -624,14 +741,13 @@ if __name__ == "__main__":
     
     # ------------------------------
     # Test 1: Vth vs Vds
-    vth_vds = [model.vth_T_dependent(vds, 0, 400) for vds in vds_range]
+    vth_vds = [model.vth_T_dependent(vds, Vbs, T) for vds in vds_range]
     fig1 = go.Figure()
     fig1.add_trace(go.Scatter(x=vds_range, y=vth_vds, name="Vth vs Vds"))
     fig1.update_layout(
         title="Threshold Voltage vs Drain-Source Voltage",
         xaxis_title="Vds (V)",
         yaxis_title="Vth (V)",
-
     )
     html_content += """
     <div class="plot-container">
@@ -643,8 +759,8 @@ if __name__ == "__main__":
     # ------------------------------
     # Test 2: Id vs Vgs for different Vds (log scale)
     fig2 = go.Figure()
-    for i, vds in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
-        ids = [model.compute(vgs, vds) for vgs in vgs_range]
+    for vds in vds_range:  # Fewer traces for clarity
+        ids = [model.compute(vgs, vds, Vbs, T) for vgs in vgs_range]
         fig2.add_trace(go.Scatter(
             x=vgs_range, 
             y=np.maximum(1e-20, ids),
@@ -658,7 +774,6 @@ if __name__ == "__main__":
         xaxis_title="Vgs (V)",
         yaxis_title="Id (A)",
         yaxis_type="log",
-
     )
     html_content += """
     <div class="plot-container">
@@ -670,8 +785,8 @@ if __name__ == "__main__":
     # ------------------------------
     # Test 3: Id vs Vds for different Vgs
     fig3 = go.Figure()
-    for i, vgs in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
-        ids = [model.compute(vgs, vds) for vds in vds_range]
+    for vgs in vgs_range:  # Fewer traces for clarity
+        ids = [model.compute(vgs, vds, Vbs, T) for vds in vds_range]
         fig3.add_trace(go.Scatter(
             x=vds_range, 
             y=ids,
@@ -684,7 +799,6 @@ if __name__ == "__main__":
         title="Drain Current vs Drain-Source Voltage",
         xaxis_title="Vds (V)",
         yaxis_title="Id (A)",
-
     )
     html_content += """
     <div class="plot-container">
@@ -695,14 +809,14 @@ if __name__ == "__main__":
     
     # ------------------------------
     # Test 4: Vgsteff vs (Vgs-Vth)
-    vth = model.vth_T_dependent(Vds, Vbs, 300)
+    vth = model.vth_T_dependent(Vds, Vbs, T)
     vgsteff_values = []
     vgst_values = []
     
     for vgs in vgs_range:
-        Vth = model.vth_T_dependent(Vds, Vbs, 300)
+        Vth = model.vth_T_dependent(Vds, Vbs, T)
         vgst = vgs - Vth
-        vgsteff = model.calculate_Vgsteff(vgs, 300, Vds, Vbs)
+        vgsteff = model.calculate_Vgsteff(vgs, T, Vds, Vbs)
         vgsteff_values.append(vgsteff)
         vgst_values.append(vgst)
     
@@ -713,7 +827,6 @@ if __name__ == "__main__":
         title="Effective Gate Overdrive vs (Vgs-Vth)",
         xaxis_title="Vgs - Vth (V)",
         yaxis_title="Vgsteff (V)",
-
     )
     html_content += """
     <div class="plot-container">
@@ -740,7 +853,6 @@ if __name__ == "__main__":
         title="log(Effective Gate Overdrive) vs (Vgs-Vth)",
         xaxis_title="Vgs - Vth (V)",
         yaxis_title="log(Vgsteff) [log(V)]",
-
     )
     html_content += """
     <div class="plot-container">
@@ -752,7 +864,7 @@ if __name__ == "__main__":
     # ------------------------------
     # Test 6: Id vs Temperature for different Vgs
     fig6 = go.Figure()
-    for i, vgs in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
+    for vgs in vgs_range:  # Fewer traces for clarity
         ids = [model.compute(vgs, Vds, Vbs, T) for T in temp_range]
         fig6.add_trace(go.Scatter(
             x=temp_range, 
@@ -766,7 +878,6 @@ if __name__ == "__main__":
         title="Drain Current vs Temperature",
         xaxis_title="Temperature (K)",
         yaxis_title="Id (A)",
-
     )
     html_content += """
     <div class="plot-container">
@@ -778,7 +889,7 @@ if __name__ == "__main__":
     # ------------------------------
     # Test 7: Mobility vs Temperature for different Vgs
     fig7 = go.Figure()
-    for i, vgs in enumerate(np.linspace(0, 5, 5)):  # Fewer traces for clarity
+    for vgs in vgs_range:  # Fewer traces for clarity
         mobilities = [model.calculate_mobility(vgs, T, Vds, Vbs) for T in temp_range]
         fig7.add_trace(go.Scatter(
             x=temp_range, 
@@ -792,7 +903,6 @@ if __name__ == "__main__":
         title="Effective Mobility vs Temperature",
         xaxis_title="Temperature (K)",
         yaxis_title="Mobility (m²/V·s)",
-
     )
     html_content += """
     <div class="plot-container">
@@ -807,15 +917,15 @@ if __name__ == "__main__":
     
     # Test 8: Vdseff vs Vds for different Vgs values
     fig8 = go.Figure()
-    for vgs in [1, 3, 5]:
-        vdseff_values = [model.calculate_Vdseff(vds, vgs, Vbs, 300) for vds in vds_range]
+    for vgs in vgs_range:
+        vdseff_values = [model.calculate_Vdseff(vds, vgs, Vbs, T) for vds in vds_range]
         fig8.add_trace(go.Scatter(
             x=vds_range,
             y=vdseff_values,
             name=f'Vgs={vgs}V',
             mode='lines'
         ))
-        vdsat = model.calculate_Vdsat(vgs, Vbs, 300, Vds)
+        vdsat = model.calculate_Vdsat(vgs, Vbs, T, Vds)
         fig8.add_vline(
             x=vdsat,
             line=dict(color="gray", width=1, dash="dash"),
@@ -832,7 +942,6 @@ if __name__ == "__main__":
         title="Vdseff vs Vds (Varying Vgs)",
         xaxis_title="Vds (V)",
         yaxis_title="Vdseff (V)",
-
     )
     html_content += """
     <div class="plot-container">
@@ -845,7 +954,7 @@ if __name__ == "__main__":
     fig9 = go.Figure()
     for delta in [0.001, 0.01, 0.05]:
         model.delta = delta
-        vdseff_values = [model.calculate_Vdseff(vds, 1.0, Vbs, 300) for vds in vds_range]
+        vdseff_values = [model.calculate_Vdseff(vds, 1.0, Vbs, T) for vds in vds_range]
         fig9.add_trace(go.Scatter(
             x=vds_range,
             y=vdseff_values,
@@ -854,7 +963,7 @@ if __name__ == "__main__":
         ))
     
     model.delta = original_delta
-    vdsat = model.calculate_Vdsat(1.0, Vbs, 300, Vds)
+    vdsat = model.calculate_Vdsat(1.0, Vbs, T, Vds)
     fig9.add_vline(
         x=vdsat,
         line=dict(color="gray", width=1, dash="dash")
@@ -869,7 +978,6 @@ if __name__ == "__main__":
         title="Vdseff vs Vds (Varying delta)",
         xaxis_title="Vds (V)",
         yaxis_title="Vdseff (V)",
-
     )
     html_content += """
     <div class="plot-container">
@@ -877,7 +985,210 @@ if __name__ == "__main__":
         {div9}
     </div>
     """.format(div9=fig9.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Test 10: Vdsat vs Vgs for different Vbs   
+    fig10 = go.Figure()
+    for vbs in vbs_range:
+        vdsat_values = [model.calculate_Vdsat(vgs, vbs, T, Vds) for vgs in vgs_range]
+        fig10.add_trace(go.Scatter(
+            x=vgs_range,
+            y=vdsat_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+    fig10.update_layout(
+        title="Saturation Voltage vs Gate-Source Voltage",
+        xaxis_title="Vgs (V)",
+        yaxis_title="Vdsat (V)",
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Saturation Voltage vs Gate-Source Voltage</h2>
+        {div10} 
+    </div>
+    """.format(div10=fig10.to_html(full_html=False, include_plotlyjs='cdn'))
     
+    # ------------------------------
+    # Test 11: Vdsat vs Temperature for different Vgs
+    fig11 = go.Figure()
+    for vgs in vgs_range:
+        vdsat_values = [model.calculate_Vdsat(vgs, Vbs, T, Vds) for T in temp_range]
+        fig11.add_trace(go.Scatter(
+            x=temp_range,
+            y=vdsat_values,
+            name=f'Vgs={vgs:.1f}V',
+            mode='lines',
+            line=dict(width=2),
+            opacity=0.8
+        ))
+    fig11.update_layout(
+        title="Saturation Voltage vs Temperature",
+        xaxis_title="Temperature (K)",
+        yaxis_title="Vdsat (V)",
+    )
+    html_content += """
+    <div class="plot-container">
+        <h2>Saturation Voltage vs Temperature</h2>
+        {div11}
+    </div>
+    """.format(div11=fig11.to_html(full_html=False, include_plotlyjs='cdn'))
+    
+    # ------------------------------
+    # Plot 13: Threshold voltage versus drain voltage at different body biases
+    fig13 = go.Figure()
+    for vbs in vbs_range:
+        vth_values = [model.vth_T_dependent(vds, vbs, T) for vds in vds_range]
+        fig13.add_trace(go.Scatter(
+            x=vds_range,
+            y=vth_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+
+    fig13.update_layout(
+        title="Threshold Voltage vs Drain Voltage at Different Body Biases",
+        xaxis_title="Drain Voltage (Vds) [V]",
+        yaxis_title="Threshold Voltage (Vth) [V]",
+        legend_title="Body Bias"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Threshold Voltage vs Drain Voltage at Different Body Biases</h2>
+        {div13}
+    </div>
+    """.format(div13=fig13.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Plot 14: Channel length dependence of threshold voltage
+    delta_vth = []
+    original_length = model.Leff
+    
+    for L in lengths:
+        model.Leff = L
+        vth = model.vth_T_dependent(Vds, Vbs, T)
+        delta_vth.append(vth - model.Vth0)  # Difference from nominal Vth0
+    
+    model.Leff = original_length  # Restore original value
+
+    fig14 = go.Figure()
+    fig14.add_trace(go.Scatter(
+        x=lengths*1e6,
+        y=delta_vth,
+        mode='lines'
+    ))
+
+    fig14.update_layout(
+        title="Channel Length Dependence of Threshold Voltage",
+        xaxis_title="Effective Channel Length (Leff) [μm]",
+        yaxis_title="ΔVth [V]"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Channel Length Dependence of Threshold Voltage</h2>
+        {div14}
+    </div>
+    """.format(div14=fig14.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Plot 15: Threshold voltage versus channel length at different biases
+    fig15 = go.Figure()
+    for vbs in vbs_range:
+        vth_values = []
+        for L in lengths:
+            model.Leff = L
+            vth_values.append(model.vth_T_dependent(Vds, vbs, T))
+        fig15.add_trace(go.Scatter(
+            x=lengths*1e6,
+            y=vth_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+    
+    model.Leff = original_length  # Restore original value
+
+    fig15.update_layout(
+        title="Threshold Voltage vs Channel Length at Different Biases",
+        xaxis_title="Effective Channel Length (Leff) [μm]",
+        yaxis_title="Threshold Voltage (Vth) [V]",
+        legend_title="Body Bias"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Threshold Voltage vs Channel Length at Different Biases</h2>
+        {div15}
+    </div>
+    """.format(div15=fig15.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Plot 17: Effective gate voltage versus applied gate voltage at different gate oxide thickness
+    original_tox = model.Tox
+
+    fig17 = go.Figure()
+    for tox in tox_range:
+        model.Tox = tox
+        model.Cox = model.epsOx / tox  # Update Cox
+        vgsteff_values = []
+        for vgs in vgs_range:
+            vgsteff = model.calculate_Vgsteff(vgs, T, Vds, Vbs)
+            vgsteff_values.append(vgsteff/vgs if vgs != 0 else 0)
+
+        fig17.add_trace(go.Scatter(
+            x=vgs_range,
+            y=vgsteff_values,
+            name=f'Tox={tox*1e9:.1f}nm',
+            mode='lines'
+        ))
+    
+    model.Tox = original_tox  # Restore original value
+    model.Cox = model.epsOx / original_tox  # Restore Cox
+
+    fig17.update_layout(
+        title="Effective Gate Voltage Ratio vs Applied Gate Voltage",
+        xaxis_title="Applied Gate Voltage (Vgs) [V]",
+        yaxis_title="Vgseff/Vgs Ratio",
+        legend_title="Oxide Thickness"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Effective Gate Voltage Ratio vs Applied Gate Voltage</h2>
+        {div17}
+    </div>
+    """.format(div17=fig17.to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # ------------------------------
+    # Plot 19: Ids vs Vgs for different Vbs
+    fig19 = go.Figure()
+    vds_small = Vds  # Linear region
+    
+    for vbs in vbs_range:
+        ids_values = [model.compute(vgs, vds_small, vbs, T) for vgs in vgs_range]
+        fig19.add_trace(go.Scatter(
+            x=vgs_range,
+            y=ids_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+
+    fig19.update_layout(
+        title="Drain Current vs Gate Voltage at Different Body Biases",
+        xaxis_title="Gate Voltage (Vgs) [V]",
+        yaxis_title="Drain Current (Ids) [A]",
+        legend_title="Body Bias",
+        yaxis_type="log"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Drain Current vs Gate Voltage at Different Body Biases</h2>
+        {div19}
+    </div>
+    """.format(div19=fig19.to_html(full_html=False, include_plotlyjs='cdn'))
+
     # Close HTML tags
     html_content += """
     </body>
