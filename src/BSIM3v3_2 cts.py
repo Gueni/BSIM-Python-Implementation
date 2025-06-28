@@ -22,7 +22,6 @@ class Simplified_BSIM3_Model:
         self.Rds_on = 0.1    # On-resistance (Ω) - Key parameter for power MOSFETs
         self.n = 2.0         # Subthreshold slope factor
         self.Voff = -1.0     # Offset voltage (V)
-        
     
     def calculate_Vgsteff(self, Vgs):
         """Simplified effective gate voltage calculation"""
