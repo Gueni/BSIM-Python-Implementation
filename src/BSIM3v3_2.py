@@ -113,9 +113,9 @@ class BSIM3v3_Model:
         # Geometry parameters
         self.Leff     = 50e-9                  # m,     Effective channel length (50nm)
         self.Weff     = 2000e-6                # m,     Effective channel width (2mm)
-        self.Ldrawn   = 180e-9                 # m,     Drawn channel length
-        self.Wdrawn   = 1e-6                   # m,     Drawn channel width
-        self.Xj       = 100e-9                 # m,     Junction depth
+        self.Ldrawn   = 0.5e-6                 # m,     Drawn channel length
+        self.Wdrawn   = 2000e-6                # m,     Drawn channel width
+        self.Xj       = 0.5e-6                 # m,     Junction depth
         self.Tox      = 1.2e-9                 # m,     Oxide thickness (1.2nm)
         self.Toxm     = 1.2e-9                 # m,     Oxide thickness for modeling
         self.Cox      = self.epsOx/self.Tox    # F/m²,  Oxide capacitance (~0.029 F/m²)
