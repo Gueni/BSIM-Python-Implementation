@@ -78,7 +78,6 @@ if __name__ == "__main__":
     vds_range = np.linspace(0, 5, 100)  # Drain-source voltage range
     vgs_range = np.linspace(0, 5, 6)    # Gate-source voltage range (for Id-Vds plot)
     vgs_fine = np.linspace(-0.5, 5, 100)  # Fine Vgs range (for Id-Vgs plot)
-    
     # Plot Id-Vds characteristics
     plt.figure(figsize=(10, 6))
     for vgs in vgs_range:
