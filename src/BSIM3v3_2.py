@@ -245,13 +245,15 @@ class BSIM3v3_Model:
         return Rdsw
          
     def calculate_V_th(self, Vds, Vbs, T):
-        """Calculate threshold voltage (Vth) based on BSIM3v3 model (Eq. 2.1.25).
+        """Calculate threshold voltage (Vth) based on BSIM3v3 model (Eq. 45).
         
         Includes:
-        - Body effect
-        - Short-channel effects
-        - Narrow width effects
-        - DIBL effects
+        - Ideal threshold voltage
+        - Non-uniform vertical doping effect (ΔVth(1))
+        - Non-uniform lateral doping effect (ΔVth(2))
+        - Short-channel effects (ΔVth(3))
+        - Narrow width effects (ΔVth(4))
+        - DIBL effects (ΔVth(5))
         - Temperature effects
         
         Args:
@@ -263,37 +265,63 @@ class BSIM3v3_Model:
             float: Threshold voltage in volts
         """
         
-        # Effective body-source voltage with smoothing (Eq. 2.1.26)
-        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
-        Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
-        # Depletion widths and characteristic lengths
-        self.Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - Vbseff) / (self.q * self.Nch))
-        lt0         = np.sqrt(self.epsSi * self.Xdep * self.Tox / self.epsOx)
-        ltw         = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2w * Vbseff)))
-        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * Vbseff)))
-        # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
-        K1ox        = self.K1 * (self.Tox / self.Toxm)
-        K2ox        = self.K2 * (self.Tox / self.Toxm)
-        Vth0ox      = self.Vth0 - K1ox * np.sqrt(self.Phi_s(T))
-        # Calculate all terms of threshold voltage (Eq. 2.1.25)
-        term1       = Vth0ox + K1ox * np.sqrt(self.Phi_s(T) - Vbseff) - K2ox * Vbseff
-        term2       = K1ox * (np.sqrt(1 + self.Nlx/self.Leff) - 1) * np.sqrt(self.Phi_s(T))
-        term3       = (self.K3 + self.K3b * Vbseff) * (self.Tox / (self.Weff + self.W0)) * self.Phi_s(T)
-        term4       = -self.Dvt0w * (np.exp(-self.Dvt1w * self.Weff * self.Leff/(2 * ltw)) + 2 * np.exp(-self.Dvt1w * self.Weff * self.Leff/ltw)) * (self.Vbi(T) - self.Phi_s(T))
-        term5       = -self.Dvt0 * (np.exp(-self.Dvt1 * self.Leff/(2 * lt)) + 2 * np.exp(-self.Dvt1 * self.Leff/lt)) * (self.Vbi(T) - self.Phi_s(T))
-        term6       = -(np.exp(-self.Dsub * self.Leff/(2 * lt0)) + 2 * np.exp(-self.Dsub * self.Leff/lt0)) * (self.Eta0 + self.Etab * Vbseff) * Vds
-        # Temperature effect on threshold voltage
-        delta_T     = (T / self.Tnom) - 1
-        term7       = (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * Vbseff) * delta_T
-        Vth    = term1 + term2 + term3 + term4 + term5 + term6 + term7
-
-        #print(f"Vth: {Vth}, Vbseff: {Vbseff}, Xdep: {self.Xdep}, Tox: {self.Tox}, Toxm: {self.Toxm}")
+        # Calculate basic parameters
+        
+        Phi_s = self.Phi_s(T)  # Surface potential
+        Vbi = self.Vbi(T)  # Built-in potential
+        
+        # Effective body-source voltage with smoothing 
+        Vbc = 0.9 * (Phi_s - self.K1**2 / (4 * self.K2**2))
+        Vbseff = Vbc + 0.5 * (Vbs - Vbc - 0.001 + 
+                            np.sqrt((Vbs - Vbc - 0.001)**2 + 4 * 0.001 * Vbc))
+        
+        # Depletion width and characteristic lengths
+        Xdep = np.sqrt(2 * self.epsSi * (Phi_s - Vbseff) / (self.q * self.Nch))
+        lt0 = np.sqrt(self.epsSi * self.Tox * Xdep / self.epsOx)
+        lt = lt0 * (1 + self.Dvt2 * Vbseff)
+        ltw = lt0 * (1 + self.Dvt2w * Vbseff)
+        
+        # Scale K1 and K2 for oxide thickness
+        K1ox = self.K1 * (self.Tox / self.Toxm)
+        K2ox = self.K2 * (self.Tox / self.Toxm)
+        
+        # Ideal threshold voltage 
+        V_Tideal = self.Vth0
+        
+        # ΔVth(1): Non-uniform vertical doping effect 
+        delta_Vth1 = K1ox * np.sqrt(Phi_s - Vbseff) - K2ox * Vbseff
+        
+        # ΔVth(2): Non-uniform lateral doping effect 
+        delta_Vth2 = K1ox * (np.sqrt(1 + self.Nlx/self.Leff) - 1) * np.sqrt(Phi_s)
+        
+        # ΔVth(3): Short-channel effect 
+        delta_Vth3 = self.Dvt0 * (np.exp(-self.Dvt1 * self.Leff/(2 * lt)) + 
+                                2 * np.exp(-self.Dvt1 * self.Leff/lt)) * (Vbi - Phi_s)
+        
+        # ΔVth(4): Narrow width effect 
+        delta_Vth4 = self.Dvt0w * (np.exp(-self.Dvt1w * self.Weff * self.Leff/(2 * ltw)) + 
+                                2 * np.exp(-self.Dvt1w * self.Weff * self.Leff/ltw)) * (Vbi - Phi_s)
+        
+        # ΔVth(5): Narrow channel effect 
+        delta_Vth5 = (self.K3 + self.K3b * Vbseff) * self.Tox * Phi_s / (self.Weff + self.W0)
+        
+        # ΔVth(6): DIBL effect 
+        delta_Vth6 = (np.exp(-self.Dsub * self.Leff/(2 * lt0)) + 
+                    2 * np.exp(-self.Dsub * self.Leff/lt0)) * (self.Eta0 + self.Etab * Vbseff) * Vds
+        
+        # Combine all terms 
+        Vth = (V_Tideal + delta_Vth1 + delta_Vth2 - delta_Vth3 - delta_Vth4 + 
+            delta_Vth5 - delta_Vth6)
+        
+        Vth += (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * Vbseff) 
+        
         return Vth
     
     def vth_T_dependent(self,Vds, Vbs, T):
         """Calculate temperature-dependent threshold voltage (Vth) based on BSIM3v3 model."""
         Vth_TNOM    = self.calculate_V_th(Vds, Vbs, self.Tnom)
-        Vth = (Vth_TNOM + (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * Vbs) * (T / self.Tnom - 1))
+        delta_T = (T / self.Tnom) - 1
+        Vth = (Vth_TNOM + (self.Kt1 + self.Kt1l/self.Leff + self.Kt2 * Vbs) * delta_T)
         return Vth
     
     def calculate_mobility(self, Vgs, T,Vds, Vbs):
@@ -352,12 +380,14 @@ class BSIM3v3_Model:
         Returns:
             float: Effective gate overdrive voltage in volts
         """
-
-        # Effective body-source voltage with smoothing (Eq. 2.1.26)
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
         Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        # Effective body-source voltage with smoothing (Eq. 2.1.26)
+        Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - Vbseff) / (self.q * self.Nch))
+
+
         Cd = self.epsSi / self.Xdep0(T)
-        lt          = np.sqrt(self.epsSi * self.Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * Vbseff)))
+        lt          = np.sqrt(self.epsSi * Xdep * self.Tox / (self.epsOx * (1 + self.Dvt2 * Vbseff)))
         # Calculate the exponential terms
         term1 = np.exp(-self.Dvt1 * self.Leff / (2 * lt))
         term2 = np.exp(-self.Dvt1 * self.Leff / (lt))
@@ -442,8 +472,12 @@ class BSIM3v3_Model:
             float: Bulk charge effect coefficient (unitless)
         """
         # Scale K1 and K2 for oxide thickness (Eq. 2.1.25)
+        Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
+        Vbseff = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
+        # Effective body-source voltage with smoothing (Eq. 2.1.26)
+        Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - Vbseff) / (self.q * self.Nch))
         K1ox        = self.K1 * (self.Tox / self.Toxm)
-        term1       = 1 + (K1ox / (2 * np.sqrt(self.Phi_s(T) - Vbs))) * (self.A0 * self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))) * (1 - self.Ags * np.square(self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * self.Xdep))))
+        term1       = 1 + (K1ox / (2 * np.sqrt(self.Phi_s(T) - Vbs))) * (self.A0 * self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * Xdep))) * (1 - self.Ags * np.square(self.Leff / (self.Leff + 2 * np.sqrt(self.Xj * Xdep))))
         term2       = (self.B0 / (self.Weff + self.B1)) / (1 + self.Keta * Vbs)
         self.Abulk  = term1 + term2
         return self.Abulk
@@ -483,9 +517,10 @@ class BSIM3v3_Model:
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
         Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
         Vth     = self.vth_T_dependent(Vds, Vbs, T)  
+        Xdep   = np.sqrt(2 * self.epsSi * (self.Phi_s(T) - Vbseff) / (self.q * self.Nch))
         Vgst    = Vgs - Vth
         mob_eff = self.calculate_mobility(Vgs, T,Vds, Vbs)
-        n       = 1 + (self.Cit + self.Citd * Vds + self.Citb * Vbseff) / self.Cox + self.Nfactor * self.epsSi / (self.Cox * self.Xdep)
+        n       = 1 + (self.Cit + self.Citd * Vds + self.Citb * Vbseff) / self.Cox + self.Nfactor * self.epsSi / (self.Cox * Xdep)
         I_s0    = mob_eff * (self.Weff / self.Leff) * np.sqrt(self.q * self.epsSi * self.Nch * np.square(self.v_t(T)) / (2 * self.Phi_s(T)))
         I_sub   = I_s0 * (1 - np.exp(-Vds / self.v_t(T))) * np.exp((Vgst - self.Voff) / (n * self.v_t(T)))
         return I_sub
