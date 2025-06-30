@@ -1189,6 +1189,33 @@ if __name__ == "__main__":
     </div>
     """.format(div19=fig19.to_html(full_html=False, include_plotlyjs='cdn'))
 
+    # ------------------------------
+    # Plot 20: Threshold voltage versus temperature at different body biases
+    fig20 = go.Figure()
+    
+    for vbs in vbs_range:
+        vth_values = [model.vth_T_dependent(Vds, vbs, temp) for temp in temp_range]
+        fig20.add_trace(go.Scatter(
+            x=temp_range,
+            y=vth_values,
+            name=f'Vbs={vbs:.1f}V',
+            mode='lines'
+        ))
+
+    fig20.update_layout(
+        title="Threshold Voltage vs Temperature at Different Body Biases",
+        xaxis_title="Temperature (K)",
+        yaxis_title="Threshold Voltage (Vth) [V]",
+        legend_title="Body Bias"
+    )
+    
+    html_content += """
+    <div class="plot-container">
+        <h2>Threshold Voltage vs Temperature at Different Body Biases</h2>
+        {div20}
+    </div>
+    """.format(div20=fig20.to_html(full_html=False, include_plotlyjs='cdn'))
+
     # Close HTML tags
     html_content += """
     </body>
