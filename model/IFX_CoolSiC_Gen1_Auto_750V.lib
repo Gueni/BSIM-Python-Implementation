@@ -1,0 +1,1883 @@
+ ****************************************************************
+*                                                               *
+* INFINEON Power Transistors                                    *
+* Level0, Level1 and Level3 SPICE Library for 750V SiC Trench   *
+* MOSFETs                                                       *
+*                                                               *
+* Version 1146                                                  *
+*                                                               *
+*****************************************************************
+*****************************************************************
+*                                                               *
+* The Simulation Model is subject to change without notice. In  *
+* addition, models can be a useful tool in evaluating device    *
+* performance, they cannot reflect the accurate device          *
+* performance under all conditions, nor are they intended to    *
+* replace bread boarding for final verification. Infineon       *
+* therefore does not assume any warranty or liability           *
+* whatsoever arising from their use. Infineon does not assume   *
+* any warranty or liability for the values and functions of the *
+* Simulation Model.                                             *
+* The methods and results of the Simulation Model are to the    *
+* best of our knowledge correct.                                *
+* However, the user is fully responsible to verify and validate *
+* these results under the operating conditions and in the       *
+* environment of its application. Infineon will not bear the    *
+* responsibility arising out of or in connection with any       *
+* malfunction of the Simulation Models.                         *
+* Models provided by Infineon are not warranted by Infineon as  *
+* completely and comprehensively representing all the           *
+* specifications and operating characteristics of the           *
+* semiconductor products to which these models relate.          *
+* The models describe the characteristics of typical devices.   *
+* In all cases, the current data sheet information for a given  *
+* device is the conclusive design guideline and the only actual *
+* performance specification.                                    *
+*                                                               *
+* This library contains Level0, Level1 and Level3 models of the *
+* following INFINEON 750V SiC Trench MOSFETs:                   *
+*                                                               *
+*   CoolSiC Gen1_Auto_750V                                      *
+*      AIMDQ75R008M1H    AIMDQ75R016M1H    AIMDQ75R040M1H       *
+*      AIMDQ75R140M1H    AIMBG75R016M1H    AIMBG75R040M1H       *
+*      AIMBG75R140M1H    AIMZA75R008M1H    AIMZA75R016M1H       *
+*      AIMZA75R020M1H    AIMZA75R027M1H    AIMZA75R040M1H       *
+*      AIMZA75R060M1H    AIMZA75R090M1H    AIMZA75R140M1H       *
+*      AIMDQ75R060M1H    AIMDQ75R090M1H    AIMDQ75R027M1H       *
+*      AIMDQ75R020M1H    AIMBG75R090M1H    AIMBG75R060M1H       *
+*      AIMBG75R027M1H    AIMBG75R020M1H                         *
+*                                                               *
+*****************************************************************
+**********************************************************************
+************************ L3 TECHNOLOGY MODEL *************************
+**********************************************************************
+
+.SUBCKT SiCMOS_750V	dd gg ss Pj Tj    PARAMS: dVth=0 aabs={1.0} aabs_2={1.0} abd_adj={1.0}  abdch_adj={1.0} cgs_aa={1.0} cgd_aa={1.0} cds_aa={1.0} cgs_aa_3rdq={1.0} cgd_aa_3rdq={1.0} rgint ={1.0}
+*?@ Start SIMPLIS Encryption $$WC_SIMPLIS_ENCRYPT_TAG$$
+	.PARAM fpar1 = {8.148}
+	.PARAM fpar2 = {aabs/fpar1}
+	.PARAM fpar3 = {abd_adj}
+	.PARAM fpar4 = {abdch_adj}
+	.PARAM fpar5 = {23.1}
+	.PARAM fpar6 = {aabs/fpar5}
+	.PARAM fpar7 = {aabs_2*aabs/fpar5}
+	.PARAM fpar8 = {rgint}
+	.PARAM fpar9 = {4.27}
+	.PARAM fpar10 = {17.67}
+	.PARAM fpar11 = {cgs_aa/fpar10}
+	.PARAM fpar12 = {cgd_aa/fpar10}
+	.PARAM fpar13 = {cds_aa/fpar10}
+	.PARAM fpar14 = {cgs_aa_3rdq/fpar9}
+	.PARAM fpar15 = {cgd_aa_3rdq/fpar9}
+.FUNC cgs_3rdq_25_0_(VGS)={TABLE(VGS, -2.00e+01,1.480e-09, -1.98e+01,1.480e-09, -1.95e+01,1.480e-09, -1.92e+01,1.480e-09, -1.90e+01,1.480e-09, -1.88e+01,1.480e-09, -1.85e+01,1.480e-09, -1.82e+01,1.480e-09, -1.80e+01,1.480e-09, -1.78e+01,1.480e-09, -1.75e+01,1.480e-09, -1.72e+01,1.480e-09, -1.70e+01,1.470e-09, -1.68e+01,1.470e-09, -1.65e+01,1.470e-09, -1.62e+01,1.470e-09, -1.60e+01,1.470e-09, -1.58e+01,1.470e-09, -1.55e+01,1.470e-09, -1.52e+01,1.470e-09, -1.50e+01,1.470e-09, -1.48e+01,1.470e-09, -1.45e+01,1.470e-09, -1.42e+01,1.460e-09, -1.40e+01,1.460e-09, -1.38e+01,1.460e-09, -1.35e+01,1.460e-09, -1.32e+01,1.460e-09, -1.30e+01,1.460e-09, -1.28e+01,1.450e-09, -1.25e+01,1.450e-09, -1.22e+01,1.450e-09, -1.20e+01,1.440e-09, -1.18e+01,1.440e-09, -1.15e+01,1.440e-09, -1.12e+01,1.430e-09, -1.10e+01,1.420e-09, -1.08e+01,1.410e-09, -1.05e+01,1.400e-09, -1.02e+01,1.390e-09, -1.00e+01,1.380e-09, -9.75e+00,1.370e-09, -9.50e+00,1.360e-09, -9.25e+00,1.340e-09, -9.00e+00,1.330e-09, -8.75e+00,1.320e-09, -8.50e+00,1.310e-09, -8.25e+00,1.300e-09, -8.00e+00,1.290e-09, -7.75e+00,1.280e-09, -7.50e+00,1.270e-09, -7.25e+00,1.250e-09, -7.00e+00,1.240e-09, -6.75e+00,1.230e-09, -6.50e+00,1.210e-09, -6.25e+00,1.200e-09, -6.00e+00,1.190e-09, -5.75e+00,1.180e-09, -5.50e+00,1.180e-09, -5.25e+00,1.170e-09, -5.00e+00,1.170e-09, -4.75e+00,1.170e-09, -4.50e+00,1.160e-09, -4.25e+00,1.160e-09, -4.00e+00,1.150e-09, -3.75e+00,1.150e-09, -3.50e+00,1.140e-09, -3.25e+00,1.140e-09, -3.00e+00,1.130e-09, -2.75e+00,1.130e-09, -2.50e+00,1.120e-09, -2.25e+00,1.120e-09, -2.00e+00,1.110e-09, -1.75e+00,1.110e-09, -1.50e+00,1.100e-09, -1.25e+00,1.100e-09, -1.00e+00,1.090e-09, -7.50e-01,1.080e-09, -5.00e-01,1.080e-09, -2.50e-01,1.070e-09, 0.00e+00,1.070e-09, 2.50e-01,1.040e-09, 5.00e-01,1.040e-09, 7.50e-01,1.030e-09, 1.00e+00,1.030e-09, 1.25e+00,1.020e-09, 1.50e+00,1.020e-09, 1.75e+00,1.010e-09, 2.00e+00,1.010e-09, 2.25e+00,1.000e-09, 2.50e+00,1.000e-09, 2.75e+00,9.960e-10, 3.00e+00,9.920e-10, 3.25e+00,9.880e-10, 3.50e+00,9.840e-10, 3.75e+00,9.790e-10, 4.00e+00,9.720e-10, 4.25e+00,9.650e-10, 4.50e+00,9.580e-10, 4.75e+00,9.530e-10, 5.00e+00,9.480e-10, 5.25e+00,9.430e-10, 5.50e+00,9.360e-10, 5.75e+00,9.270e-10, 6.00e+00,9.130e-10, 6.25e+00,8.900e-10, 6.50e+00,8.550e-10, 6.75e+00,8.000e-10)}
+.FUNC cgd_3rdq_25_0_(VGS)={TABLE(VGS, -2.00e+01,1.300e-10, -1.98e+01,1.300e-10, -1.95e+01,1.300e-10, -1.92e+01,1.290e-10, -1.90e+01,1.290e-10, -1.88e+01,1.290e-10, -1.85e+01,1.290e-10, -1.82e+01,1.290e-10, -1.80e+01,1.290e-10, -1.78e+01,1.290e-10, -1.75e+01,1.280e-10, -1.72e+01,1.280e-10, -1.70e+01,1.280e-10, -1.68e+01,1.280e-10, -1.65e+01,1.270e-10, -1.62e+01,1.270e-10, -1.60e+01,1.270e-10, -1.58e+01,1.270e-10, -1.55e+01,1.260e-10, -1.52e+01,1.260e-10, -1.50e+01,1.250e-10, -1.48e+01,1.250e-10, -1.45e+01,1.250e-10, -1.42e+01,1.240e-10, -1.40e+01,1.230e-10, -1.38e+01,1.230e-10, -1.35e+01,1.220e-10, -1.32e+01,1.210e-10, -1.30e+01,1.200e-10, -1.28e+01,1.190e-10, -1.25e+01,1.170e-10, -1.22e+01,1.160e-10, -1.20e+01,1.140e-10, -1.18e+01,1.130e-10, -1.15e+01,1.110e-10, -1.12e+01,1.100e-10, -1.10e+01,1.090e-10, -1.08e+01,1.090e-10, -1.05e+01,1.090e-10, -1.02e+01,1.090e-10, -1.00e+01,1.080e-10, -9.75e+00,1.090e-10, -9.50e+00,1.090e-10, -9.25e+00,1.110e-10, -9.00e+00,1.120e-10, -8.75e+00,1.130e-10, -8.50e+00,1.150e-10, -8.25e+00,1.170e-10, -8.00e+00,1.180e-10, -7.75e+00,1.200e-10, -7.50e+00,1.210e-10, -7.25e+00,1.230e-10, -7.00e+00,1.250e-10, -6.75e+00,1.270e-10, -6.50e+00,1.300e-10, -6.25e+00,1.320e-10, -6.00e+00,1.340e-10, -5.75e+00,1.360e-10, -5.50e+00,1.380e-10, -5.25e+00,1.390e-10, -5.00e+00,1.410e-10, -4.75e+00,1.430e-10, -4.50e+00,1.450e-10, -4.25e+00,1.470e-10, -4.00e+00,1.490e-10, -3.75e+00,1.520e-10, -3.50e+00,1.550e-10, -3.25e+00,1.580e-10, -3.00e+00,1.610e-10, -2.75e+00,1.650e-10, -2.50e+00,1.700e-10, -2.25e+00,1.760e-10, -2.00e+00,1.850e-10, -1.75e+00,1.970e-10, -1.50e+00,2.110e-10, -1.25e+00,2.260e-10, -1.00e+00,2.400e-10, -7.50e-01,2.530e-10, -5.00e-01,2.650e-10, -2.50e-01,2.760e-10, 0.00e+00,2.870e-10, 2.50e-01,3.180e-10, 5.00e-01,3.290e-10, 7.50e-01,3.420e-10, 1.00e+00,3.570e-10, 1.25e+00,3.720e-10, 1.50e+00,3.880e-10, 1.75e+00,4.040e-10, 2.00e+00,4.190e-10, 2.25e+00,4.340e-10, 2.50e+00,4.500e-10, 2.75e+00,4.650e-10, 3.00e+00,4.810e-10, 3.25e+00,4.970e-10, 3.50e+00,5.140e-10, 3.75e+00,5.310e-10, 4.00e+00,5.480e-10, 4.25e+00,5.640e-10, 4.50e+00,5.770e-10, 4.75e+00,5.880e-10, 5.00e+00,5.970e-10, 5.25e+00,6.050e-10, 5.50e+00,6.140e-10, 5.75e+00,6.260e-10, 6.00e+00,6.420e-10, 6.25e+00,6.660e-10, 6.50e+00,7.020e-10, 6.75e+00,7.590e-10)}
+.FUNC cgs_25_0_(VDS)={TABLE(VDS, 0,0.00000000449503,0.1,0.00000000453683,0.2,0.00000000454433,0.3,0.00000000453983,0.4,0.00000000452773,0.5,0.00000000450953,0.6,0.00000000448743,0.7,0.00000000448783,0.8,0.00000000449603,0.9,0.00000000450393,1,0.00000000451133,1.1,0.00000000451853,1.2,0.00000000452523,1.3,0.00000000453203,1.4,0.00000000453883,1.5,0.00000000454523,1.6,0.00000000455143,1.7,0.00000000455713,1.8,0.00000000456253,1.9,0.00000000456743,2,0.00000000457193,2.1,0.00000000457603,2.2,0.00000000457953,2.3,0.00000000458323,2.4,0.00000000458673,2.5,0.00000000458993,2.6,0.00000000459343,2.7,0.00000000459653,2.8,0.00000000459953,2.9,0.00000000460283,3,0.00000000460593,3.2,0.00000000461193,3.4,0.00000000461793,3.6,0.00000000462393,3.8,0.00000000462993,4,0.00000000463633,4.2,0.00000000464283,4.4,0.00000000464963,4.6,0.00000000465643,4.8,0.00000000466333,5,0.00000000466993,5.2,0.00000000467653,5.4,0.00000000468283,5.6,0.00000000468873,5.8,0.00000000469473,6,0.00000000470073,6.2,0.00000000470703,6.4,0.00000000471463,6.6,0.00000000472583,6.8,0.00000000474633,7,0.00000000477573,7.2,0.00000000479363,7.4,0.00000000480003,7.6,0.00000000480313,7.8,0.00000000480563,8,0.00000000480793,8.2,0.00000000480973,8.4,0.00000000481153,8.6,0.00000000481273,8.8,0.00000000481403,9,0.00000000481513,9.2,0.00000000481613,9.4,0.00000000481703,9.6,0.00000000481773,9.8,0.00000000481863,10,0.00000000481923,11,0.00000000482213,12,0.00000000482393,13,0.00000000482543,14,0.00000000482633,15,0.00000000482713,16,0.00000000482743,17,0.00000000482773,18,0.00000000482793,19,0.00000000482793,20,0.00000000482803,21,0.00000000482783,22,0.00000000482753,23,0.00000000482733,24,0.00000000482723,25,0.00000000482683,26,0.00000000482653,27,0.00000000482633,28,0.00000000482593,29,0.00000000482543,30,0.00000000482493,31,0.00000000482453,32,0.00000000482403,33,0.00000000482373,34,0.00000000482333,35,0.00000000482253,36,0.00000000482223,37,0.00000000482173,38,0.00000000482133,39,0.00000000482083,40,0.00000000482023,41,0.00000000481973,42,0.00000000481923,43,0.00000000481873,44,0.00000000481803,45,0.00000000481763,46,0.00000000481693,47,0.00000000481653,48,0.00000000481613,49,0.00000000481553,50,0.00000000481503,60,0.00000000481013,70,0.00000000480503,80,0.00000000479983,90,0.00000000479513,100,0.00000000479033,110,0.0000000047859,120,0.0000000047815,130,0.00000000477718,140,0.00000000477319,150,0.00000000476902,160,0.0000000047652,170,0.00000000476132,180,0.00000000475759,190,0.00000000475393,200,0.00000000475033,210,0.0000000047469,220,0.00000000474353,230,0.00000000474025,240,0.00000000473674,250,0.0000000047336,260,0.00000000473054,270,0.00000000472726,280,0.00000000472417,290,0.00000000472126,300,0.00000000471813,310,0.00000000471529,320,0.00000000471234,330,0.00000000470948,340,0.00000000470672,350,0.00000000470394,360,0.00000000470115,370,0.00000000469854,380,0.00000000469573,390,0.00000000469301,400,0.00000000469038,410,0.00000000468794,420,0.00000000468519,430,0.00000000468264,440,0.00000000468008,450,0.00000000467751,460,0.00000000467513,470,0.00000000467265,480,0.00000000467016,490,0.00000000466777,500,0.00000000466536,510,0.00000000466286,520,0.00000000466054,530,0.00000000465832,540,0.00000000465569,550,0.00000000465345,560,0.00000000465111,570,0.00000000464885,580,0.00000000464638,590,0.0000000046442,600,0.0000000046417,700, 4.61713E-09, 800, 4.59279E-09)}
+.FUNC cgd_25_0_(VDS)={TABLE(VDS, 0,0.00000000107004,0.1,0.00000000102324,0.2,0.00000000099374,0.3,0.00000000097494,0.4,0.00000000096324,0.5,0.00000000095664,0.6,0.00000000095354,0.7,0.00000000092754,0.8,0.00000000089364,0.9,0.00000000086034,1,0.00000000082754,1.1,0.00000000079494,1.2,0.00000000076264,1.3,0.00000000073034,1.4,0.00000000069894,1.5,0.00000000066884,1.6,0.00000000064094,1.7,0.00000000061614,1.8,0.00000000059464,1.9,0.00000000057664,2,0.00000000056134,2.1,0.00000000054834,2.2,0.00000000053774,2.3,0.00000000052704,2.4,0.00000000051704,2.5,0.00000000050764,2.6,0.00000000049844,2.7,0.00000000048964,2.8,0.00000000048124,2.9,0.00000000047304,3,0.00000000046504,3.2,0.00000000045014,3.4,0.00000000043534,3.6,0.00000000042094,3.8,0.00000000040674,4,0.00000000039264,4.2,0.00000000037854,4.4,0.00000000036444,4.6,0.00000000035054,4.8,0.00000000033674,5,0.00000000032364,5.2,0.00000000031114,5.4,0.00000000029954,5.6,0.00000000028864,5.8,0.00000000027824,6,0.00000000026784,6.2,0.00000000025694,6.4,0.00000000024464,6.6,0.00000000022774,6.8,0.00000000019834,7,0.00000000015704,7.2,0.00000000013254,7.4,0.00000000012424,7.6,0.00000000011984,7.8,0.00000000011624,8,0.00000000011314,8.2,0.00000000011054,8.4,0.00000000010814,8.6,0.00000000010604,8.8,0.00000000010414,9,0.00000000010244,9.2,0.00000000010084,9.4,0.00000000009934,9.6,0.00000000009794,9.8,0.00000000009664,10,0.00000000009544,11,0.00000000009054,12,0.00000000008644,13,0.00000000008314,14,0.00000000008044,15,0.00000000007804,16,0.00000000007604,17,0.00000000007424,18,0.00000000007264,19,0.00000000007114,20,0.00000000006984,21,0.00000000006874,22,0.00000000006764,23,0.00000000006664,24,0.00000000006564,25,0.00000000006484,26,0.00000000006404,27,0.00000000006324,28,0.00000000006254,29,0.00000000006194,30,0.00000000006124,31,0.00000000006064,32,0.00000000006014,33,0.00000000005954,34,0.00000000005904,35,0.00000000005854,36,0.00000000005804,37,0.00000000005764,38,0.00000000005714,39,0.00000000005674,40,0.00000000005634,41,0.00000000005594,42,0.00000000005564,43,0.00000000005524,44,0.00000000005494,45,0.00000000005454,46,0.00000000005424,47,0.00000000005394,48,0.00000000005364,49,0.00000000005334,50,0.00000000005304,60,0.00000000005064,70,0.00000000004864,80,0.00000000004694,90,0.00000000004544,100,0.00000000004414,110,0.00000000004307,120,0.00000000004207,130,0.00000000004119,140,0.00000000004038,150,0.00000000003965,160,0.00000000003897,170,0.00000000003835,180,0.00000000003778,190,0.00000000003724,200,0.00000000003674,210,0.00000000003627,220,0.00000000003584,230,0.00000000003542,240,0.00000000003503,250,0.00000000003467,260,0.00000000003433,270,0.00000000003401,280,0.0000000000337,290,0.00000000003341,300,0.00000000003314,310,0.00000000003288,320,0.00000000003263,330,0.00000000003239,340,0.00000000003215,350,0.00000000003193,360,0.00000000003172,370,0.00000000003153,380,0.00000000003134,390,0.00000000003116,400,0.00000000003099,410,0.00000000003083,420,0.00000000003068,430,0.00000000003053,440,0.00000000003039,450,0.00000000003026,460,0.00000000003014,470,0.00000000003002,480,0.00000000002991,490,0.0000000000298,500,0.00000000002971,510,0.00000000002961,520,0.00000000002953,530,0.00000000002945,540,0.00000000002938,550,0.00000000002932,560,0.00000000002926,570,0.00000000002922,580,0.00000000002919,590,0.00000000002917,600,0.00000000002917,700, 2.917E-11, 800, 2.917E-11)}
+.FUNC cds_25_0_(VDS)={TABLE(VDS, 0,0.00000000334333,0.1,0.00000000345683,0.2,0.00000000355203,0.3,0.00000000363423,0.4,0.00000000370723,0.5,0.00000000377243,0.6,0.00000000383113,0.7,0.00000000391043,0.8,0.00000000399473,0.9,0.00000000394413,1,0.00000000389073,1.1,0.00000000383943,1.2,0.00000000379033,1.3,0.00000000374273,1.4,0.00000000369693,1.5,0.00000000365283,1.6,0.00000000361053,1.7,0.00000000356923,1.8,0.00000000353003,1.9,0.00000000349243,2,0.00000000345623,2.1,0.00000000342093,2.2,0.00000000339033,2.3,0.00000000335773,2.4,0.00000000332583,2.5,0.00000000329453,2.6,0.00000000326383,2.7,0.00000000323423,2.8,0.00000000320523,2.9,0.00000000317663,3,0.00000000314903,3.2,0.00000000309673,3.4,0.00000000304433,3.6,0.00000000299363,3.8,0.00000000294423,4,0.00000000289623,4.2,0.00000000284873,4.4,0.00000000280213,4.6,0.00000000275623,4.8,0.00000000271113,5,0.00000000266673,5.2,0.00000000262423,5.4,0.00000000258253,5.6,0.00000000254223,5.8,0.00000000250253,6,0.00000000246303,6.2,0.00000000242193,6.4,0.00000000237663,6.6,0.00000000231843,6.8,0.00000000222363,7,0.00000000209063,7.2,0.00000000199933,7.4,0.00000000195553,7.6,0.00000000192263,7.8,0.00000000189343,8,0.00000000186713,8.2,0.00000000184283,8.4,0.00000000182013,8.6,0.00000000179853,8.8,0.00000000177823,9,0.00000000175883,9.2,0.00000000174033,9.4,0.00000000172283,9.6,0.00000000170583,9.8,0.00000000168953,10,0.00000000167393,11,0.00000000160683,12,0.00000000154553,13,0.00000000149173,14,0.00000000144393,15,0.00000000140113,16,0.00000000136223,17,0.00000000132673,18,0.00000000129423,19,0.00000000126323,20,0.00000000123663,21,0.00000000121073,22,0.00000000118643,23,0.00000000116373,24,0.00000000114233,25,0.00000000112213,26,0.00000000110323,27,0.00000000108523,28,0.00000000106803,29,0.00000000105193,30,0.00000000103653,31,0.00000000102163,32,0.00000000100753,33,0.00000000099403,34,0.00000000098103,35,0.00000000096863,36,0.00000000095673,37,0.00000000094523,38,0.00000000093433,39,0.00000000092363,40,0.00000000091333,41,0.00000000090343,42,0.00000000089373,43,0.00000000088453,44,0.00000000087553,45,0.00000000086693,46,0.00000000085853,47,0.00000000085043,48,0.00000000084253,49,0.00000000083483,50,0.00000000082743,60,0.00000000076613,70,0.00000000071453,80,0.00000000067243,90,0.00000000063713,100,0.00000000060723,110,0.0000000005812,120,0.0000000005583,130,0.00000000053808,140,0.00000000052009,150,0.00000000050382,160,0.000000000489,170,0.00000000047542,180,0.00000000046299,190,0.00000000045153,200,0.00000000044083,210,0.0000000004309,220,0.00000000042173,230,0.00000000041315,240,0.00000000040514,250,0.0000000003976,260,0.00000000039044,270,0.00000000038376,280,0.00000000037727,290,0.00000000037116,300,0.00000000036493,310,0.00000000035839,320,0.00000000035124,330,0.00000000034438,340,0.00000000033882,350,0.00000000033374,360,0.00000000032885,370,0.00000000032474,380,0.00000000032043,390,0.00000000031601,400,0.00000000031248,410,0.00000000030904,420,0.00000000030589,430,0.00000000030294,440,0.00000000029998,450,0.00000000029731,460,0.00000000029453,470,0.00000000029205,480,0.00000000028966,490,0.00000000028727,500,0.00000000028506,510,0.00000000028296,520,0.00000000028084,530,0.00000000027892,540,0.00000000027709,550,0.00000000027535,560,0.00000000027381,570,0.00000000027225,580,0.00000000027088,590,0.0000000002698,600,0.0000000002688,700, 2.688E-10, 800, 2.688E-10)}
+VGS0 GS00 0   0Vdc
+CGS0 GS00 GS0 1e-12
+EGSX GS0  0   ss1 gi 1
+EGS  GS1  0   VALUE={1e12*if(V(GD0) > 0, fpar11*cgs_25_0_(V(GD0)), fpar14*cgs_3rdq_25_0_(-V(GD0)))}
+GGS  ss1    gi   VALUE={V(GS1, 0) * I(VGS0)}
+RPCGS	gi	ss1		10G
+RSCGS	ss1	sx		10m
+VGD0 GD00 0   0Vdc
+CGD0 GD00 GD0 1e-12
+EGDX GD0  0   dd2 gi 1
+EGD  GD1  0   VALUE={1e12*if(V(GD0) > 0, fpar12*cgd_25_0_(V(GD0)), fpar15*cgd_3rdq_25_0_(-V(GD0)))}
+GGD  dd2   gi   VALUE={V(GD1, 0) * I(VGD0)}
+RPCGD	gi	dd2		10G
+RSCGD	dd	dd2		10m
+VDS0 DS00 0   0Vdc
+CDS0 DS00 DS0 1e-12
+EDSX DS0  0   dd1 sx 1
+EDS  DS1  0   VALUE={1e12*cds_25_0_(V(dd1, sx))}
+GDS  dd1   sx   VALUE={fpar13*V(DS1, 0) * I(VDS0)}
+RPCDS	dd1	sx		10G
+RSCDS	dd	dd1		10m
+	RGint	gg	gi	{fpar8}
+	X$MF	dd	gi	sx	Tj	MF	PARAMS: dVth = {dVth} AScale = {fpar6} AScale_Adj = {fpar7}
+	X$BD	sx	dd	gi Tj BodyDiodeModel PARAMS: AScaleBD = {fpar2} AScale_BD_Adj = {fpar3} AScale_BDCH_Adj= {fpar4}
+	VIPow	sx	ss	DC=0
+	G_Pow  0   Pj   VALUE = {LIMIT( I(VIPow)*(V(dd,ss))  ,-100k,100k) }
+	R_Pow  0   Pj  1
+*?@ End SIMPLIS Encryption
+.ENDS
+
+.SUBCKT MF	dd	gg	ss	Tj	PARAMS: dVth = 0	AScale = 1 AScale_Adj = 1
+*?@ Start SIMPLIS Encryption $$WC_SIMPLIS_ENCRYPT_TAG$$
+.PARAM fpar16 = 25
+.param fpar17=830
+	.FUNC IMOS(T,VD,VG) = {IS(T,VD,VG)*((tanh((VD/(IS(T,VD,VG)*RON(T,VD,VG)))**(1/KR(T,VG))))**KR(T,VG))}
+	.FUNC DIBL(VD) = {fpar18*VD}
+	.param fpar18 ={0.00}
+    .FUNC VGS(T,VD,VG) = {VG - (Uth(T) + dVth + fpar19 - {IF(VG >=0.0,DIBL(VD),0.0)})}
+	.PARAM fpar19 = {0}
+	.FUNC VGEff(T,VD,VG) = {((VGS(T,VD,VG) + LN(2*cosh(VGS(T,VD,VG))))/2 )+ 1e-4}
+	.FUNC RON(T,VD,VG)	= {fpar24*(RON_Y0(T) + 1/((VGEff(T,VD,VG))**RON_P(T)))}
+	.FUNC Uth(T) = {fpar21 + fpar22 * (T - fpar16) + fpar23 * (T - fpar16) ** 2}
+				.PARAM		fpar21 = {4.115}
+				+			fpar22 = {-0.0065}
+				+			fpar23 = { -2.9955e-07}
+				+			fpar24 = {72}
+    .FUNC RONscale (aAct) {(IF(AScale*23.1>=14.0,1.03,1.0))}
+	.FUNC RON_Y0(T) = {RONscale(AScale)*fpar25 + RONscale(AScale)*fpar26 * (T - fpar16) + RONscale(AScale)*fpar27 * (T - fpar16) ** 2}
+			.PARAM		fpar25 = {1.085e-03}
+				+		fpar26 = {4.7e-06}
+				+		fpar27 = {2.750000e-08}
+	.FUNC RON_P(T) = {fpar29 + fpar30 * (T - fpar16) + fpar31 * (T - fpar16) ** 2}
+				.PARAM		fpar29 = {3.20209827}
+				+			fpar30 = {1.0000e-03}
+				+			fpar31 = {1.2678e-05}
+	.FUNC IS(T,VD,VG) = {(fpar32*(ISAT(T)*VGEff(T,VD,VG))**ISC(T,VG))+ ((fpar37*AScale + fpar38)+ ((fpar39*(T-fpar16) + fpar40)*(T-fpar16)))}
+	.FUNC ISAT(T) = {(fpar33 - fpar34 * (T - fpar16)) * fpar35 }
+				.PARAM		fpar32 = {46*1.2}
+				+			fpar33 = {0.05908702}
+				+			fpar34 = { 4.5e-05}
+				+			fpar35 = {1.5512 }
+				+			fpar36 = {8.4e-08}
+				+			fpar37 = {0.0}
+				+			fpar38 = {0.0}
+				+			fpar39 = {0.0}
+				+			fpar40 = {0.0}
+	.FUNC ISC(T,VG) = {IF(VG >0, if(VG<35, fpar41 + fpar42* (T - fpar16) + fpar43*VG, fpar41 + fpar42*T + fpar43*(VG*30**(1/fpar44-1))**fpar44), 1) }
+				.PARAM		fpar41 = {3.2*0.9}
+				+			fpar42 = {-0.003956*0.8}
+				+			fpar43 = {-0.071*0.8}
+				+			fpar44 = {0.4}
+	.FUNC KR(T,VG) = {IF(VG >=0, (0.5 * tanh(-fpar45*(VG-fpar46)) + 0.5) *(KR_A(T) + KR_B(T) * VG) + (0.5 * tanh(fpar45*(VG-fpar46)) + 0.5) * 1, 1) }
+			.PARAM	fpar45 = {0.4554595}
+			+		fpar46 = {33}
+	.FUNC KR_A(T) = { fpar47 + fpar48 * (T - fpar16) + fpar49 * (T - fpar16) ** 2}
+				.PARAM	fpar47 = {0.8*2.04695319}
+				+		fpar48 = {-0.00193245}
+				+		fpar49 = {4.0e-05}
+	.FUNC KR_B(T) = {fpar50 + fpar51 * (T - fpar16) + fpar52 * (T - fpar16) ** 2}
+				.PARAM	fpar50 = {0.9*0.02987931}
+				+		fpar51 = {9.2088e-05}
+				+		fpar52 = {-2.8087e-06}
+	.FUNC dL(VD) = {1 + if(Vd>fpar53, (((VD-fpar53)/fpar56)/(fpar55*((VD-fpar53)/fpar56)+fpar54))**2, 0)}
+		.PARAM	fpar53 = {0}
+		+		fpar54 = {1e-08}
+		+		fpar55 = {0.278}
+		+		fpar56 = {330}
+	.FUNC IMOSFET(T,VD,VG)	= {AScale_Adj*(IMOS(T,VD,VG)*dL(VD) + limit(EXP(VD-fpar17), 0, 1k))}
+	GMOS	dd	ss	VALUE = {IF( V(dd,ss) > 0.0, IMOSFET(V(Tj,0),V(dd,ss),V(gg,ss)), 0)}
+*?@ End SIMPLIS Encryption
+.ENDS
+
+.SUBCKT BodyDiodeModel ss dd gg Tj PARAMS: AScaleBD = 100 AScale_BD_Adj=1 AScale_BDCH_Adj=1
+*?@ Start SIMPLIS Encryption $$WC_SIMPLIS_ENCRYPT_TAG$$
+		.param fpar16=25
+		.FUNC VBD_LIM(T, VD, VG) = { LIMIT( VD-fpar58, -100.0, -VDPN(T,VG)) }
+		.PARAM fpar58={ 0 }
+		.FUNC VG_LIM(VG)  = { fpar59 *( LIMIT(VG,-20,0) + fpar60 ) }
+			.PARAM	fpar59 = { 0.2 }
+			+		fpar60 = { 35 }
+		.FUNC ALPHA(T,VG) =	{ fpar61 + fpar62 * VG_LIM(VG) + fpar63 * VG_LIM(VG)**2 }
+			.PARAM	fpar61 = {8.0}
+			+		fpar62 = { 0.00514 }
+			+		fpar63 = { 0.001 }
+		.FUNC VDPN(T,VG) =	{ (fpar64 + fpar65*(T-fpar16) + fpar66*((T-fpar16)**2))  + (fpar67 + fpar68*(T-fpar16) + fpar69*((T-fpar16)**2)) * tanh((fpar70 + fpar71*(T-fpar16) + fpar72*((T-fpar16)**2))*(VG-(fpar73 + fpar74*(T-fpar16) + fpar75*((T-fpar16)**2))))}
+			.PARAM	fpar64 = {1.55}
+			+		fpar65 = {-0.00127}
+			+		fpar66 = {0.00003}
+			+		fpar67 = {-1.9}
+			+		fpar68 = {0.0065}
+			+		fpar69 = {0.0000023}
+			+		fpar70 = {0.17}
+			+		fpar71 = {0.00}
+			+		fpar72 = {0.00}
+			+		fpar73 = {1.32}
+			+		fpar74 = {-0.00094}
+			+		fpar75 = {-0.000126}
+		.FUNC GAMMA(T,VG) =	{ fpar76 + fpar77 * VG_LIM(VG) }
+			.PARAM	fpar76 = {3.15}
+			+		fpar77 = { -0.2005 }
+		.FUNC IDpn(T, VD, VG) =  {  (- ALPHA(T,VG) * ( IDpnTMP(T, VD, VG)  ) ** GAMMA(T,VG) ) }
+		.FUNC IDpnTMP(T, VD, VG) =	IF( -VBD_LIM(T, VD, VG) - VDPN(T,VG) > 0, -VBD_LIM(T, VD, VG) - VDPN(T,VG) , 0)
+		GIDIODE	dd	ss	VALUE = {AScaleBD * AScale_BD_Adj *IF(V(dd,ss) < 0.0,  IDpn(V(Tj,0),V(dd,ss),V(gg,ss)), 0)}
+		.FUNC DIBL(VD) = {fpar78*VD}
+		.PARAM fpar78 = {0.0035}
+		.FUNC VGS(T,VD,VG) = {VG - (Uth(T) - {IF(VG >=0.0,DIBL(VD),0.0)})}
+		.FUNC VGEff(T,VD,VG) = {(VGS(T,VD,VG) + LN(2*cosh(VGS(T,VD,VG))))/2 + 0.0001}
+		.FUNC fpar24(T) = {(fpar79) * 0.933 * 190/205}
+				.param fpar79 = {0.894}
+		.FUNC RON(T,VD,VG)	= {fpar24(T)*(RON_Y0(T) + 1/((VGEff(T,VD,VG))**RON_P(T)))}
+		.FUNC Uth(T) = {fpar80 + fpar81*(T-fpar16)}
+			.PARAM		fpar80 = {6.8}
+			+		fpar81 = {-0.032}
+		.FUNC RON_Y0(T) = {fpar82}
+		.PARAM		fpar82 = {2.22E-02}
+		.FUNC RON_P(T) = {fpar83}
+		.PARAM		fpar83 = {1.96E+00}
+	.PARAM fpar84 = {0.961}
+	.PARAM fpar85 = {-0.00265}
+	.FUNC IDIODE(T,VD,VG)	= {(fpar84 + fpar85*(T-fpar16))*VD/(RON(T,VD,VG))}
+	GMOS	dd	ss	VALUE = {AScaleBD *IF(V(dd,ss) < 0.0,  AScale_BDCH_Adj*IDIODE(V(Tj,0),V(dd,ss),V(gg,ss)), 0)}
+*?@ End SIMPLIS Encryption
+.ENDS
+
+**********************************************************************
+**********************************************************************
+**********************************************************************
+************************ L0 TECHNOLOGY MODEL *************************
+**********************************************************************
+
+.SUBCKT  tech_sicmos_L0  dd  g  s   PARAMS:  Rs=1 Rg=1 SFI=1 SFC=1 aabs=1
+.PARAM SFI_ACT={SFI*aabs/8.15}
+.PARAM SFC_ACT={SFC*aabs/5.2}
+.PARAM Rd={12.1m/SFI_ACT} Rd_TC1=3.7m Rd_TC2=27.0u Rx=1m
+.PARAM DMOS_Vth=7 DMOS_KP={SFI_ACT*35} DMOS_THETA=0 DMOS_VMAX=1.5e5 DMOS_ETA=0
+.PARAM DMOS_GAMMA=0 DMOS_IS={SFI_ACT*1E-38} DMOS_T_ABS=150 DMOS_RS=0 DMOS_RB={0.01/SFI_ACT}
+.PARAM MVDR_KP={SFI_ACT*245} MVDR_Vth=-1 MVDR_LAMBDA=0.5
+.PARAM Cds1={SFC_ACT*30p} Cox={SFC_ACT*0.5n} Cgs={SFC_ACT*1.25n}
+.PARAM sw_Vth=0.0 sw_KP=10
+.PARAM Dbt_BV=825 Dbt_M=0.53 Dbt_CJO={SFC_ACT*1.5n} Dbt_VJ=2.4 Dbt_IS=1E-20 Dbt_N=20 Dbt_T_ABS=27
+.PARAM DGD_M=0.6 DGD_CJO={SFC_ACT*0.1n} DGD_VJ=1.2 DGD_IS=1E-20 DGD_T_ABS=27
+.PARAM Eaux=1 Eaux2=-1
+.PARAM RDIBL1=800G RDIBL2=2G Rconv1=1Meg Rconv2=10Meg
+.MODEL DMOS  NMOS(GAMMA={DMOS_GAMMA}  IS={DMOS_IS}  T_ABS={DMOS_T_ABS}  RS={DMOS_RS}  RB={DMOS_RB}  KP={DMOS_KP}  VTO={DMOS_Vth}
++ THETA={DMOS_THETA}  VMAX={DMOS_VMAX}  ETA={DMOS_ETA}  LEVEL=3)
+.MODEL MVDR  NMOS(KP={MVDR_KP}  VTO={MVDR_Vth}  LAMBDA={MVDR_LAMBDA}   LEVEL=1)
+.MODEL sw    NMOS(VTO={sw_Vth}  KP={sw_KP}   LEVEL=1)
+.MODEL Dbt   D(IS={Dbt_IS}  BV={Dbt_BV}   M={Dbt_M}  CJO={Dbt_CJO}  VJ={Dbt_VJ}  N={Dbt_N}  T_ABS={Dbt_T_ABS}  LEVEL=1)
+.MODEL DGD   D(IS={DGD_IS}  M={DGD_M}   CJO={DGD_CJO}   VJ={DGD_VJ}  T_ABS={DGD_T_ABS}  LEVEL=1)
+Rs     s       s2   {Rs}
+Rg     g       g2   {Rg}
+Rd     d2      d1a  {Rd}   TC1={Rd_TC1}  TC2={Rd_TC2}
+M1     d2      g3   s2   s2   DMOS    L={1u}   W={1u}
+Mr     dd      d2a  d1a  d1a  MVDR    L={1u}   W={1u}
+Rx     d2a     d1a  {Rx}
+Cds1   s2      d2   {Cds1}
+Dbd    s2      d2   Dbt
+Maux   g2      c    a    a   sw
+Maux2  b       d    g2    g2   sw
+Eaux   c       a    d2    g2   {Eaux}
+Eaux2  d       g2   d2    g2   {Eaux2}
+Cox    b       d2   {Cox}
+Rpar   b       d2   {Rconv1}
+Dgd    a       d2   DGD
+Rpar2  d2      a    {Rconv2}
+Cgs    g2      s2   {Cgs}
+RDIBL1 d2      m1   {RDIBL1}
+RDIBL2 m1      s2   {RDIBL2}
+Einv   m2      s2   m1   s2   {-1}
+Edibl  g3      s2   g2   m2   {1}
+.ENDS
+
+**********************************************************************
+
+.SUBCKT AIMDQ75R008M1H_L0 drain gate source source_k  PARAMS:  Ls=2.59E-09 Ld=1.72E-09 Lg=8.72E-09 Lssk=4.95E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=3.48E-04 Rg=4.84E-02 Rssk=4.16E-02 aabs=23.1
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R008M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R008M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=2.59E-09 Ld=1.72E-09 Lg=8.72E-09 Lssk=4.95E-09
+.PARAM Rs=3.48E-04      Rg=4.84E-02       Rd=4.09E-05       Rssk=4.16E-02      aabs=23.1
+.param rgint=3
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.31E+01      cgd_aa=2.20E+01       cds_aa=2.20E+01       cgs_aa_3rdq=2.31E+01       cgd_aa_3rdq=2.10E+01
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R008M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=2.59E-09 Ld=1.72E-09 Lg=8.72E-09 Lssk=4.95E-09
+.PARAM Rs=3.48E-04      Rg=4.84E-02       Rd=4.09E-05       Rssk=4.16E-02      aabs=23.1
+.param rgint=3
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.31E+01      cgd_aa=2.20E+01       cds_aa=2.20E+01       cgs_aa_3rdq=2.31E+01       cgd_aa_3rdq=2.10E+01
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      435.31u
+C_CZth2     0     1      613.424u
+C_CZth3     0     2      2.0878m
+C_CZth4     0     3      12.9256m
+C_CZth5     0     4      41.2686m
+R_Rth1      Tj    1      6.45496m
+R_Rth2      1     2      11.984m
+R_Rth3      2     3      31.2035m
+R_Rth4      3     4      51.8491m
+R_Rth5      4     Tcase  138.493m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R016M1H_L0 drain gate source source_k  PARAMS:  Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=5.10E-04 Rg=5.01E-02 Rssk=4.34E-02 aabs=10.6
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R016M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R016M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM Rs=5.10E-04      Rg=5.01E-02       Rd=4.32E-05       Rssk=4.34E-02      aabs=10.6
+.param rgint=3
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.08E+01      cgd_aa=1.00E+01       cds_aa=1.02E+01       cgs_aa_3rdq=1.08E+01       cgd_aa_3rdq=9.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R016M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM Rs=5.10E-04      Rg=5.01E-02       Rd=4.32E-05       Rssk=4.34E-02      aabs=10.6
+.param rgint=3
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.08E+01      cgd_aa=1.00E+01       cds_aa=1.02E+01       cgs_aa_3rdq=1.08E+01       cgd_aa_3rdq=9.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      224.283u
+C_CZth2     0     1      522.676u
+C_CZth3     0     2      1.24394m
+C_CZth4     0     3      6.76101m
+C_CZth5     0     4      18.4708m
+R_Rth1      Tj    1      11.1426m
+R_Rth2      1     2      23.0677m
+R_Rth3      2     3      68.4105m
+R_Rth4      3     4      88.9299m
+R_Rth5      4     Tcase  198.417m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R040M1H_L0 drain gate source source_k  PARAMS:  Ls=4.62E-09 Ld=2.19E-09 Lg=9.52E-09 Lssk=5.57E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=9.93E-04 Rg=5.20E-02 Rssk=4.72E-02 aabs=4.269
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R040M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R040M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=4.62E-09 Ld=2.19E-09 Lg=9.52E-09 Lssk=5.57E-09
+.PARAM Rs=9.93E-04      Rg=5.20E-02       Rd=4.63E-05       Rssk=4.72E-02      aabs=4.269
+.param rgint=6
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=4.27E+00      cgd_aa=4.27E+00       cds_aa=4.27E+00       cgs_aa_3rdq=4.27E+00       cgd_aa_3rdq=4.27E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R040M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=4.62E-09 Ld=2.19E-09 Lg=9.52E-09 Lssk=5.57E-09
+.PARAM Rs=9.93E-04      Rg=5.20E-02       Rd=4.63E-05       Rssk=4.72E-02      aabs=4.269
+.param rgint=6
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=4.27E+00      cgd_aa=4.27E+00       cds_aa=4.27E+00       cgs_aa_3rdq=4.27E+00       cgd_aa_3rdq=4.27E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      79.1193u
+C_CZth2     0     1      216.606u
+C_CZth3     0     2      1.63835m
+C_CZth4     0     3      4.27698m
+C_CZth5     0     4      8.30424m
+R_Rth1      Tj    1      63.7853m
+R_Rth2      1     2      132.351m
+R_Rth3      2     3      132.351m
+R_Rth4      3     4      162.713m
+R_Rth5      4     Tcase  218.819m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R140M1H_L0 drain gate source source_k  PARAMS:  Ls=6.09E-09 Ld=2.48E-09 Lg=1.07E-08 Lssk=5.71E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=4.05E-03 Rg=5.94E-02 Rssk=5.16E-02 aabs=1.216
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R140M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R140M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=6.09E-09 Ld=2.48E-09 Lg=1.07E-08 Lssk=5.71E-09
+.PARAM Rs=4.05E-03      Rg=5.94E-02       Rd=5.36E-05       Rssk=5.16E-02      aabs=1.216
+.param rgint=16
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.32E+00      cgd_aa=1.50E+00       cds_aa=1.80E+00       cgs_aa_3rdq=1.30E+00       cgd_aa_3rdq=2.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R140M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=6.09E-09 Ld=2.48E-09 Lg=1.07E-08 Lssk=5.71E-09
+.PARAM Rs=4.05E-03      Rg=5.94E-02       Rd=5.36E-05       Rssk=5.16E-02      aabs=1.216
+.param rgint=16
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.32E+00      cgd_aa=1.50E+00       cds_aa=1.80E+00       cgs_aa_3rdq=1.30E+00       cgd_aa_3rdq=2.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      26.8808u
+C_CZth2     0     1      72.0861u
+C_CZth3     0     2      152.708u
+C_CZth4     0     3      891.606u
+C_CZth5     0     4      4.23219m
+R_Rth1      Tj    1      114.625m
+R_Rth2      1     2      245.379m
+R_Rth3      2     3      245.379m
+R_Rth4      3     4      443.921m
+R_Rth5      4     Tcase  450.552m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMBG75R016M1H_L0 drain gate source source_k  PARAMS:  Ls=2.81E-09 Ld=1.59E-10 Lg=8.24E-09 Lssk=4.53E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=4.46E-04 Rg=4.14E-02 Rssk=3.29E-02 aabs=10.6
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMBG75R016M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMBG75R016M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=2.81E-09 Ld=1.59E-10 Lg=8.24E-09 Lssk=4.53E-09
+.PARAM Rs=4.46E-04      Rg=4.14E-02       Rd=2.04E-06       Rssk=3.29E-02      aabs=10.6
+.param rgint=3
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.08E+01      cgd_aa=1.00E+01       cds_aa=1.02E+01       cgs_aa_3rdq=1.08E+01       cgd_aa_3rdq=9.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMBG75R016M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=2.81E-09 Ld=1.59E-10 Lg=8.24E-09 Lssk=4.53E-09
+.PARAM Rs=4.46E-04      Rg=4.14E-02       Rd=2.04E-06       Rssk=3.29E-02      aabs=10.6
+.param rgint=3
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.08E+01      cgd_aa=1.00E+01       cds_aa=1.02E+01       cgs_aa_3rdq=1.08E+01       cgd_aa_3rdq=9.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      224.283u
+C_CZth2     0     1      522.676u
+C_CZth3     0     2      1.24394m
+C_CZth4     0     3      6.76101m
+C_CZth5     0     4      18.4708m
+R_Rth1      Tj    1      11.1426m
+R_Rth2      1     2      23.0677m
+R_Rth3      2     3      68.4105m
+R_Rth4      3     4      88.9299m
+R_Rth5      4     Tcase  198.417m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMBG75R040M1H_L0 drain gate source source_k  PARAMS:  Ls=3.30E-09 Ld=1.63E-10 Lg=7.54E-09 Lssk=4.72E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=7.86E-04 Rg=3.64E-02 Rssk=3.29E-02 aabs=4.269
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMBG75R040M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMBG75R040M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.30E-09 Ld=1.63E-10 Lg=7.54E-09 Lssk=4.72E-09
+.PARAM Rs=7.86E-04      Rg=3.64E-02       Rd=2.32E-06       Rssk=3.29E-02      aabs=4.269
+.param rgint=6
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=4.27E+00      cgd_aa=4.27E+00       cds_aa=4.27E+00       cgs_aa_3rdq=4.27E+00       cgd_aa_3rdq=4.27E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMBG75R040M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.30E-09 Ld=1.63E-10 Lg=7.54E-09 Lssk=4.72E-09
+.PARAM Rs=7.86E-04      Rg=3.64E-02       Rd=2.32E-06       Rssk=3.29E-02      aabs=4.269
+.param rgint=6
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=4.27E+00      cgd_aa=4.27E+00       cds_aa=4.27E+00       cgs_aa_3rdq=4.27E+00       cgd_aa_3rdq=4.27E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      79.1193u
+C_CZth2     0     1      216.606u
+C_CZth3     0     2      1.63835m
+C_CZth4     0     3      4.27698m
+C_CZth5     0     4      8.30424m
+R_Rth1      Tj    1      63.7853m
+R_Rth2      1     2      132.351m
+R_Rth3      2     3      132.351m
+R_Rth4      3     4      162.713m
+R_Rth5      4     Tcase  218.819m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMBG75R140M1H_L0 drain gate source source_k  PARAMS:  Ls=4.64E-09 Ld=2.45E-10 Lg=8.85E-09 Lssk=5.05E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=3.55E-03 Rg=4.55E-02 Rssk=3.80E-02 aabs=1.216
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMBG75R140M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMBG75R140M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=4.64E-09 Ld=2.45E-10 Lg=8.85E-09 Lssk=5.05E-09
+.PARAM Rs=3.55E-03      Rg=4.55E-02       Rd=7.81E-06       Rssk=3.80E-02      aabs=1.216
+.param rgint=16
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.32E+00      cgd_aa=1.50E+00       cds_aa=1.80E+00       cgs_aa_3rdq=1.30E+00       cgd_aa_3rdq=2.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMBG75R140M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=4.64E-09 Ld=2.45E-10 Lg=8.85E-09 Lssk=5.05E-09
+.PARAM Rs=3.55E-03      Rg=4.55E-02       Rd=7.81E-06       Rssk=3.80E-02      aabs=1.216
+.param rgint=16
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.32E+00      cgd_aa=1.50E+00       cds_aa=1.80E+00       cgs_aa_3rdq=1.30E+00       cgd_aa_3rdq=2.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      26.8808u
+C_CZth2     0     1      72.0861u
+C_CZth3     0     2      152.708u
+C_CZth4     0     3      891.606u
+C_CZth5     0     4      4.23219m
+R_Rth1      Tj    1      114.625m
+R_Rth2      1     2      245.379m
+R_Rth3      2     3      245.379m
+R_Rth4      3     4      443.921m
+R_Rth5      4     Tcase  450.552m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R008M1H_L0 drain gate source source_k  PARAMS:  Ls=1.85E-09 Ld=1.96E-09 Lg=6.91E-09 Lssk=4.18E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=3.47E-04 Rg=4.31E-02 Rssk=3.31E-02 aabs=23.1
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R008M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R008M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=1.85E-09 Ld=1.96E-09 Lg=6.91E-09 Lssk=4.18E-09
+.PARAM Rs=3.47E-04      Rg=4.31E-02       Rd=1.16E-04       Rssk=3.31E-02      aabs=23.1
+.param rgint=2.02
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.31E+01      cgd_aa=2.20E+01       cds_aa=2.20E+01       cgs_aa_3rdq=2.31E+01       cgd_aa_3rdq=2.10E+01
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R008M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=1.85E-09 Ld=1.96E-09 Lg=6.91E-09 Lssk=4.18E-09
+.PARAM Rs=3.47E-04      Rg=4.31E-02       Rd=1.16E-04       Rssk=3.31E-02      aabs=23.1
+.param rgint=2.02
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.31E+01      cgd_aa=2.20E+01       cds_aa=2.20E+01       cgs_aa_3rdq=2.31E+01       cgd_aa_3rdq=2.10E+01
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      404.134u
+C_CZth2     0     1      874.782u
+C_CZth3     0     2      3.09279m
+C_CZth4     0     3      26.0764m
+C_CZth5     0     4      90.811m
+R_Rth1      Tj    1      6.2246m
+R_Rth2      1     2      16.0794m
+R_Rth3      2     3      42.2914m
+R_Rth4      3     4      70.858m
+R_Rth5      4     Tcase  154.012m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R016M1H_L0 drain gate source source_k  PARAMS:  Ls=1.90E-09 Ld=2.21E-09 Lg=7.51E-09 Lssk=4.06E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=3.91E-04 Rg=4.56E-02 Rssk=3.12E-02 aabs=10.6
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R016M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R016M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=1.90E-09 Ld=2.21E-09 Lg=7.51E-09 Lssk=4.06E-09
+.PARAM Rs=3.91E-04      Rg=4.56E-02       Rd=1.18E-04       Rssk=3.12E-02      aabs=10.6
+.param rgint=2.78
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.08E+01      cgd_aa=1.00E+01       cds_aa=1.02E+01       cgs_aa_3rdq=1.08E+01       cgd_aa_3rdq=9.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R016M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=1.90E-09 Ld=2.21E-09 Lg=7.51E-09 Lssk=4.06E-09
+.PARAM Rs=3.91E-04      Rg=4.56E-02       Rd=1.18E-04       Rssk=3.12E-02      aabs=10.6
+.param rgint=2.78
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.08E+01      cgd_aa=1.00E+01       cds_aa=1.02E+01       cgs_aa_3rdq=1.08E+01       cgd_aa_3rdq=9.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      189.676u
+C_CZth2     0     1      319.333u
+C_CZth3     0     2      1.26761m
+C_CZth4     0     3      12.4043m
+C_CZth5     0     4      64.2572m
+R_Rth1      Tj    1      16.7662m
+R_Rth2      1     2      31.3318m
+R_Rth3      2     3      79.2098m
+R_Rth4      3     4      157.604m
+R_Rth5      4     Tcase  180.31m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R020M1H_L0 drain gate source source_k  PARAMS:  Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=5.43E-04 Rg=5.21E-02 Rssk=4.20E-02 aabs=8.336
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R020M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R020M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM Rs=5.43E-04      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=8.336
+.param rgint=3.17
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=8.34E+00      cgd_aa=8.34E+00       cds_aa=8.34E+00       cgs_aa_3rdq=8.34E+00       cgd_aa_3rdq=8.34E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R020M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM Rs=5.43E-04      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=8.336
+.param rgint=3.17
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=8.34E+00      cgd_aa=8.34E+00       cds_aa=8.34E+00       cgs_aa_3rdq=8.34E+00       cgd_aa_3rdq=8.34E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      171.516u
+C_CZth2     0     1      311.011u
+C_CZth3     0     2      1.03482m
+C_CZth4     0     3      9.69196m
+C_CZth5     0     4      49.1139m
+R_Rth1      Tj    1      18.6639m
+R_Rth2      1     2      35.6539m
+R_Rth3      2     3      87.5987m
+R_Rth4      3     4      171.623m
+R_Rth5      4     Tcase  225.46m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R027M1H_L0 drain gate source source_k  PARAMS:  Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=5.43E-04 Rg=5.21E-02 Rssk=4.20E-02 aabs=6.278
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R027M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R027M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM Rs=5.43E-04      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=6.278
+.param rgint=3.75
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=6.28E+00      cgd_aa=5.72E+00       cds_aa=6.28E+00       cgs_aa_3rdq=6.28E+00       cgd_aa_3rdq=6.28E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R027M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM Rs=5.43E-04      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=6.278
+.param rgint=3.75
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=6.28E+00      cgd_aa=5.72E+00       cds_aa=6.28E+00       cgs_aa_3rdq=6.28E+00       cgd_aa_3rdq=6.28E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      146.281u
+C_CZth2     0     1      299.447u
+C_CZth3     0     2      711.347u
+C_CZth4     0     3      5.92294m
+C_CZth5     0     4      28.071m
+R_Rth1      Tj    1      21.3009m
+R_Rth2      1     2      41.6599m
+R_Rth3      2     3      99.2558m
+R_Rth4      3     4      191.104m
+R_Rth5      4     Tcase  288.2m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R040M1H_L0 drain gate source source_k  PARAMS:  Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=5.43E-04 Rg=5.21E-02 Rssk=4.20E-02 aabs=4.269
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R040M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R040M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM Rs=5.43E-04      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=4.269
+.param rgint=4.87
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=4.27E+00      cgd_aa=4.27E+00       cds_aa=4.27E+00       cgs_aa_3rdq=4.27E+00       cgd_aa_3rdq=4.27E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R040M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=2.41E-09 Ld=2.25E-09 Lg=8.44E-09 Lssk=5.14E-09
+.PARAM Rs=5.43E-04      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=4.269
+.param rgint=4.87
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=4.27E+00      cgd_aa=4.27E+00       cds_aa=4.27E+00       cgs_aa_3rdq=4.27E+00       cgd_aa_3rdq=4.27E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      119.072u
+C_CZth2     0     1      252.823u
+C_CZth3     0     2      621.834u
+C_CZth4     0     3      5.03835m
+C_CZth5     0     4      29.1142m
+R_Rth1      Tj    1      26.2627m
+R_Rth2      1     2      56.1093m
+R_Rth3      2     3      148.548m
+R_Rth4      3     4      270.011m
+R_Rth5      4     Tcase  309.069m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R060M1H_L0 drain gate source source_k  PARAMS:  Ls=3.12E-09 Ld=2.38E-09 Lg=8.45E-09 Lssk=5.13E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=1.02E-03 Rg=5.21E-02 Rssk=4.20E-02 aabs=2.838
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R060M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R060M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.12E-09 Ld=2.38E-09 Lg=8.45E-09 Lssk=5.13E-09
+.PARAM Rs=1.02E-03      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=2.838
+.param rgint=6.7
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.93E+00      cgd_aa=2.84E+00       cds_aa=3.41E+00       cgs_aa_3rdq=2.84E+00       cgd_aa_3rdq=2.84E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R060M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.12E-09 Ld=2.38E-09 Lg=8.45E-09 Lssk=5.13E-09
+.PARAM Rs=1.02E-03      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=2.838
+.param rgint=6.7
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.93E+00      cgd_aa=2.84E+00       cds_aa=3.41E+00       cgs_aa_3rdq=2.84E+00       cgd_aa_3rdq=2.84E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      82.0093u
+C_CZth2     0     1      189.312u
+C_CZth3     0     2      499.901u
+C_CZth4     0     3      3.83337m
+C_CZth5     0     4      30.5353m
+R_Rth1      Tj    1      33.0215m
+R_Rth2      1     2      75.7921m
+R_Rth3      2     3      215.692m
+R_Rth4      3     4      377.497m
+R_Rth5      4     Tcase  337.497m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R090M1H_L0 drain gate source source_k  PARAMS:  Ls=3.12E-09 Ld=2.38E-09 Lg=8.45E-09 Lssk=5.13E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=1.02E-03 Rg=5.21E-02 Rssk=4.20E-02 aabs=1.891
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R090M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R090M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.12E-09 Ld=2.38E-09 Lg=8.45E-09 Lssk=5.13E-09
+.PARAM Rs=1.02E-03      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=1.891
+.param rgint=9.23
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.04E+00      cgd_aa=1.89E+00       cds_aa=2.47E+00       cgs_aa_3rdq=1.89E+00       cgd_aa_3rdq=1.89E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R090M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.12E-09 Ld=2.38E-09 Lg=8.45E-09 Lssk=5.13E-09
+.PARAM Rs=1.02E-03      Rg=5.21E-02       Rd=1.19E-04       Rssk=4.20E-02      aabs=1.891
+.param rgint=9.23
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.04E+00      cgd_aa=1.89E+00       cds_aa=2.47E+00       cgs_aa_3rdq=1.89E+00       cgd_aa_3rdq=1.89E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      60.232u
+C_CZth2     0     1      135.328u
+C_CZth3     0     2      349.967u
+C_CZth4     0     3      2.41325m
+C_CZth5     0     4      18.0434m
+R_Rth1      Tj    1      44.5468m
+R_Rth2      1     2      98.4508m
+R_Rth3      2     3      288.877m
+R_Rth4      3     4      468.732m
+R_Rth5      4     Tcase  429.7m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMZA75R140M1H_L0 drain gate source source_k  PARAMS:  Ls=3.59E-09 Ld=2.87E-09 Lg=6.46E-09 Lssk=3.85E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=3.61E-03 Rg=4.04E-02 Rssk=3.04E-02 aabs=1.216
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMZA75R140M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMZA75R140M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.59E-09 Ld=2.87E-09 Lg=6.46E-09 Lssk=3.85E-09
+.PARAM Rs=3.61E-03      Rg=4.04E-02       Rd=1.27E-04       Rssk=3.04E-02      aabs=1.216
+.param rgint=13.65
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.32E+00      cgd_aa=1.50E+00       cds_aa=1.80E+00       cgs_aa_3rdq=1.30E+00       cgd_aa_3rdq=2.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMZA75R140M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.59E-09 Ld=2.87E-09 Lg=6.46E-09 Lssk=3.85E-09
+.PARAM Rs=3.61E-03      Rg=4.04E-02       Rd=1.27E-04       Rssk=3.04E-02      aabs=1.216
+.param rgint=13.65
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=1.32E+00      cgd_aa=1.50E+00       cds_aa=1.80E+00       cgs_aa_3rdq=1.30E+00       cgd_aa_3rdq=2.00E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      42.9498u
+C_CZth2     0     1      118.152u
+C_CZth3     0     2      296.225u
+C_CZth4     0     3      1.42705m
+C_CZth5     0     4      11.9621m
+R_Rth1      Tj    1      81.175m
+R_Rth2      1     2      208.931m
+R_Rth3      2     3      285.895m
+R_Rth4      3     4      504.392m
+R_Rth5      4     Tcase  660.392m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R060M1H_L0 drain gate source source_k  PARAMS:  Ls=4.62E-09 Ld=2.19E-09 Lg=9.52E-09 Lssk=5.57E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=9.93E-04 Rg=5.20E-02 Rssk=4.72E-02 aabs=2.838
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R060M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R060M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=4.62E-09 Ld=2.19E-09 Lg=9.52E-09 Lssk=5.57E-09
+.PARAM Rs=9.93E-04      Rg=5.20E-02       Rd=4.63E-05       Rssk=4.72E-02      aabs=2.838
+.param rgint=6.7
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.93E+00      cgd_aa=2.84E+00       cds_aa=3.41E+00       cgs_aa_3rdq=2.84E+00       cgd_aa_3rdq=2.84E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R060M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=4.62E-09 Ld=2.19E-09 Lg=9.52E-09 Lssk=5.57E-09
+.PARAM Rs=9.93E-04      Rg=5.20E-02       Rd=4.63E-05       Rssk=4.72E-02      aabs=2.838
+.param rgint=6.7
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.93E+00      cgd_aa=2.84E+00       cds_aa=3.41E+00       cgs_aa_3rdq=2.84E+00       cgd_aa_3rdq=2.84E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      4.479703e-05
+C_CZth2     0     1      1.201320e-04
+C_CZth3     0     2      2.544889e-04
+C_CZth4     0     3      1.485867e-03
+C_CZth5     0     4      7.052973e-03
+R_Rth1      Tj    1      0.068782
+R_Rth2      1     2      0.147242
+R_Rth3      2     3      0.147242
+R_Rth4      3     4      0.266378
+R_Rth5      4     Tcase  0.270357
+.ENDS
+
+********************************************************************************
+
+**********************************************************************
+**********************************************************************
+**********************************************************************
+
+.SUBCKT AIMDQ75R090M1H_L0 drain gate source source_k  PARAMS:  Ls=5.35E-09 Ld=2.45E-09 Lg=1.08E-08 Lssk=5.79E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=2.02E-03 Rg=6.04E-02 Rssk=5.23E-02 aabs=1.891
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R090M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R090M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=5.35E-09 Ld=2.45E-09 Lg=1.08E-08 Lssk=5.79E-09
+.PARAM Rs=2.02E-03      Rg=6.04E-02       Rd=5.23E-05       Rssk=5.23E-02      aabs=1.891
+.param rgint=9.266
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.04E+00      cgd_aa=1.89E+00       cds_aa=2.47E+00       cgs_aa_3rdq=1.89E+00       cgd_aa_3rdq=1.89E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R090M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=5.35E-09 Ld=2.45E-09 Lg=1.08E-08 Lssk=5.79E-09
+.PARAM Rs=2.02E-03      Rg=6.04E-02       Rd=5.23E-05       Rssk=5.23E-02      aabs=1.891
+.param rgint=9.266
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.04E+00      cgd_aa=1.89E+00       cds_aa=2.47E+00       cgs_aa_3rdq=1.89E+00       cgd_aa_3rdq=1.89E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      36.7328u
+C_CZth2     0     1      98.5062u
+C_CZth3     0     2      208.677u
+C_CZth4     0     3      1.21839m
+C_CZth5     0     4      5.78332m
+R_Rth1      Tj    1      89.4163m
+R_Rth2      1     2      191.414m
+R_Rth3      2     3      191.414m
+R_Rth4      3     4      346.291m
+R_Rth5      4     Tcase  351.464m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R027M1H_L0 drain gate source source_k  PARAMS:  Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=5.10E-04 Rg=5.01E-02 Rssk=4.34E-02 aabs=6.278
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R027M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R027M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM Rs=5.10E-04      Rg=5.01E-02       Rd=4.32E-05       Rssk=4.34E-02      aabs=6.278
+.param rgint=3.754
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=6.28E+00      cgd_aa=5.72E+00       cds_aa=6.28E+00       cgs_aa_3rdq=6.28E+00       cgd_aa_3rdq=6.28E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R027M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM Rs=5.10E-04      Rg=5.01E-02       Rd=4.32E-05       Rssk=4.34E-02      aabs=6.278
+.param rgint=3.754
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=6.28E+00      cgd_aa=5.72E+00       cds_aa=6.28E+00       cgs_aa_3rdq=6.28E+00       cgd_aa_3rdq=6.28E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      151.698u
+C_CZth2     0     1      369.635u
+C_CZth3     0     2      1.44115m
+C_CZth4     0     3      5.51894m
+C_CZth5     0     4      13.3873m
+R_Rth1      Tj    1      37.465m
+R_Rth2      1     2      77.7116m
+R_Rth3      2     3      100.382m
+R_Rth4      3     4      125.823m
+R_Rth5      4     Tcase  208.618m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R020M1H_L0 drain gate source source_k  PARAMS:  Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=5.10E-04 Rg=5.01E-02 Rssk=4.34E-02 aabs=8.336
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMDQ75R020M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMDQ75R020M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM Rs=5.10E-04      Rg=5.01E-02       Rd=4.32E-05       Rssk=4.34E-02      aabs=8.336
+.param rgint=3.168
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=8.34E+00      cgd_aa=8.34E+00       cds_aa=8.34E+00       cgs_aa_3rdq=8.34E+00       cgd_aa_3rdq=8.34E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMDQ75R020M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.22E-09 Ld=1.96E-09 Lg=9.10E-09 Lssk=5.29E-09
+.PARAM Rs=5.10E-04      Rg=5.01E-02       Rd=4.32E-05       Rssk=4.34E-02      aabs=8.336
+.param rgint=3.168
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=8.34E+00      cgd_aa=8.34E+00       cds_aa=8.34E+00       cgs_aa_3rdq=8.34E+00       cgd_aa_3rdq=8.34E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      192.519u
+C_CZth2     0     1      455.703u
+C_CZth3     0     2      1.33024m
+C_CZth4     0     3      6.21747m
+C_CZth5     0     4      16.2462m
+R_Rth1      Tj    1      22.6616m
+R_Rth2      1     2      46.9806m
+R_Rth3      2     3      82.4017m
+R_Rth4      3     4      105.075m
+R_Rth5      4     Tcase  202.881m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMBG75R090M1H_L0 drain gate source source_k  PARAMS:  Ls=4.01E-09 Ld=2.30E-10 Lg=8.97E-09 Lssk=4.96E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=1.74E-03 Rg=4.65E-02 Rssk=3.75E-02 aabs=1.891
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMBG75R090M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMBG75R090M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=4.01E-09 Ld=2.30E-10 Lg=8.97E-09 Lssk=4.96E-09
+.PARAM Rs=1.74E-03      Rg=4.65E-02       Rd=6.04E-06       Rssk=3.75E-02      aabs=1.891
+.param rgint=9.266
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.04E+00      cgd_aa=1.89E+00       cds_aa=2.47E+00       cgs_aa_3rdq=1.89E+00       cgd_aa_3rdq=1.89E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMBG75R090M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=4.01E-09 Ld=2.30E-10 Lg=8.97E-09 Lssk=4.96E-09
+.PARAM Rs=1.74E-03      Rg=4.65E-02       Rd=6.04E-06       Rssk=3.75E-02      aabs=1.891
+.param rgint=9.266
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.04E+00      cgd_aa=1.89E+00       cds_aa=2.47E+00       cgs_aa_3rdq=1.89E+00       cgd_aa_3rdq=1.89E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      36.7328u
+C_CZth2     0     1      98.5062u
+C_CZth3     0     2      208.677u
+C_CZth4     0     3      1.21839m
+C_CZth5     0     4      5.78332m
+R_Rth1      Tj    1      89.4163m
+R_Rth2      1     2      191.414m
+R_Rth3      2     3      191.414m
+R_Rth4      3     4      346.291m
+R_Rth5      4     Tcase  351.464m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMBG75R060M1H_L0 drain gate source source_k  PARAMS:  Ls=3.30E-09 Ld=1.63E-10 Lg=7.54E-09 Lssk=4.72E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=7.86E-04 Rg=3.64E-02 Rssk=3.29E-02 aabs=2.838
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMBG75R060M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMBG75R060M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=3.30E-09 Ld=1.63E-10 Lg=7.54E-09 Lssk=4.72E-09
+.PARAM Rs=7.86E-04      Rg=3.64E-02       Rd=2.32E-06       Rssk=3.29E-02      aabs=2.838
+.param rgint=6.7
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.93E+00      cgd_aa=2.84E+00       cds_aa=3.41E+00       cgs_aa_3rdq=2.84E+00       cgd_aa_3rdq=2.84E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMBG75R060M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=3.30E-09 Ld=1.63E-10 Lg=7.54E-09 Lssk=4.72E-09
+.PARAM Rs=7.86E-04      Rg=3.64E-02       Rd=2.32E-06       Rssk=3.29E-02      aabs=2.838
+.param rgint=6.7
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=2.93E+00      cgd_aa=2.84E+00       cds_aa=3.41E+00       cgs_aa_3rdq=2.84E+00       cgd_aa_3rdq=2.84E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      4.479703e-05
+C_CZth2     0     1      1.201320e-04
+C_CZth3     0     2      2.544889e-04
+C_CZth4     0     3      1.485867e-03
+C_CZth5     0     4      7.052973e-03
+R_Rth1      Tj    1      0.068782
+R_Rth2      1     2      0.147242
+R_Rth3      2     3      0.147242
+R_Rth4      3     4      0.266378
+R_Rth5      4     Tcase  0.270357
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMBG75R027M1H_L0 drain gate source source_k  PARAMS:  Ls=2.56E-09 Ld=1.30E-10 Lg=7.29E-09 Lssk=4.03E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=4.25E-04 Rg=3.52E-02 Rssk=2.82E-02 aabs=6.278
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMBG75R027M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMBG75R027M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=2.56E-09 Ld=1.30E-10 Lg=7.29E-09 Lssk=4.03E-09
+.PARAM Rs=4.25E-04      Rg=3.52E-02       Rd=1.39E-06       Rssk=2.82E-02      aabs=6.278
+.param rgint=3.754
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=6.28E+00      cgd_aa=5.72E+00       cds_aa=6.28E+00       cgs_aa_3rdq=6.28E+00       cgd_aa_3rdq=6.28E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMBG75R027M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=2.56E-09 Ld=1.30E-10 Lg=7.29E-09 Lssk=4.03E-09
+.PARAM Rs=4.25E-04      Rg=3.52E-02       Rd=1.39E-06       Rssk=2.82E-02      aabs=6.278
+.param rgint=3.754
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=6.28E+00      cgd_aa=5.72E+00       cds_aa=6.28E+00       cgs_aa_3rdq=6.28E+00       cgd_aa_3rdq=6.28E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      151.698u
+C_CZth2     0     1      369.635u
+C_CZth3     0     2      1.44115m
+C_CZth4     0     3      5.51894m
+C_CZth5     0     4      13.3873m
+R_Rth1      Tj    1      37.465m
+R_Rth2      1     2      77.7116m
+R_Rth3      2     3      100.382m
+R_Rth4      3     4      125.823m
+R_Rth5      4     Tcase  208.618m
+.ENDS
+
+********************************************************************************
+
+.SUBCKT AIMBG75R020M1H_L0 drain gate source source_k  PARAMS:  Ls=2.58E-09 Ld=1.61E-10 Lg=8.92E-09 Lssk=4.57E-09
+.PARAM SFI=1.00E+00 SFC=1.00E+00 Rs=6.00E-04 Rg=4.65E-02 Rssk=3.28E-02 aabs=8.747
+Ld     drain    dd   {Ld}
+Lg     gate     g    {Lg}
+Ls     source   s    {Ls}
+Rd     drain    dd   1.0
+Rg     gate     g    1.0
+Rs     source   s    1.0
+Rssk    source_k sk1  {Rssk}
+Lssk    sk1      s    {Lssk}
+Rsskcon source_k sk1  1.0
+X1  dd  g  s  tech_sicmos_L0  PARAMS: Rs={Rs} Rg={Rg} SFI={SFI} SFC={SFC} aabs={aabs}
+.ENDS AIMBG75R020M1H_L0
+
+********************************************************************************
+
+.SUBCKT AIMBG75R020M1H_L1 drain gate source source_k PARAMS: dVth=0 Ls=2.58E-09 Ld=1.61E-10 Lg=8.92E-09 Lssk=4.57E-09
+.PARAM Rs=6.00E-04      Rg=4.65E-02       Rd=2.25E-06       Rssk=3.28E-02      aabs=8.747
+.param rgint=3.168
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=8.75E+00      cgd_aa=8.75E+00       cds_aa=8.75E+00       cgs_aa_3rdq=8.75E+00       cgd_aa_3rdq=8.75E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+ETj	Tj	w	VALUE = {TEMP}
+RTj	w	0	1u
+.ENDS
+
+.SUBCKT AIMBG75R020M1H_L3 drain gate source source_k Tj Tcase PARAMS: dVth=0 Ls=2.58E-09 Ld=1.61E-10 Lg=8.92E-09 Lssk=4.57E-09
+.PARAM Rs=6.00E-04      Rg=4.65E-02       Rd=2.25E-06       Rssk=3.28E-02      aabs=8.747
+.param rgint=3.168
+.param aabs_2=1.00E+00      abd_adj=1.00E+00       abdch_adj=1.00E+00       cgs_aa=8.75E+00      cgd_aa=8.75E+00       cds_aa=8.75E+00       cgs_aa_3rdq=8.75E+00       cgd_aa_3rdq=8.75E+00
+Lg    gate   g1   {Lg}
+Rg    g1     g    {Rg}
+Rgcon gate   g1   1.0
+Ls    source s1   {Ls}
+Rs    s1     s    {Rs}
+Rscon source s1   1.0
+Ld    drain  d1   {Ld}
+Rd    d1     dd   {Rd}
+Rdcon drain  d1   1.0
+Lssk    s      sk1       {Lssk}
+Rssk    sk1    source_k  {Rssk}
+Rsskcon s      sk1       1.0
+X$MF  dd     g     s  Pow	Tj  SiCMOS_750V    PARAMS: dVth={dVth} aabs={aabs} aabs_2={aabs_2} abd_adj={abd_adj} abdch_adj={abdch_adj} cgs_aa={cgs_aa} cgd_aa={cgd_aa} cds_aa={cds_aa} cgs_aa_3rdq={cgs_aa_3rdq} cgd_aa_3rdq={cgd_aa_3rdq} rgint={rgint}
+GPOW    0   Tj  VALUE = {IF(time > 0,LIMIT(V(Pow,0),-1e6,1e6),0)}
+RGPOW   Tj  0   1Meg
+C_CZth1     Tj    0      192.519u
+C_CZth2     0     1      455.703u
+C_CZth3     0     2      1.33024m
+C_CZth4     0     3      6.21747m
+C_CZth5     0     4      16.2462m
+R_Rth1      Tj    1      22.6616m
+R_Rth2      1     2      46.9806m
+R_Rth3      2     3      82.4017m
+R_Rth4      3     4      105.075m
+R_Rth5      4     Tcase  202.881m
+.ENDS
+
+********************************************************************************
