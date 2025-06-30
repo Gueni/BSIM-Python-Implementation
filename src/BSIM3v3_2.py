@@ -736,8 +736,8 @@ if __name__ == "__main__":
     model = BSIM3v3_Model()
     
     # Declare all ranges at the top
-    vds_range = np.linspace(0, 10, 100)          # Drain-source voltage range
-    vgs_range = np.linspace(-0.5, 15, 100)       # Gate-source voltage range
+    vds_range = np.linspace(0, 5, 100)          # Drain-source voltage range
+    vgs_range = np.linspace(0, 15, 100)       # Gate-source voltage range
     temp_range = np.linspace(250, 400, 100)      # Temperature range
     vbs_range = np.linspace(-3, 0, 5)            # Body bias range
     lengths = np.linspace(0.18e-6, 1e-6, 50)     # Channel length range
