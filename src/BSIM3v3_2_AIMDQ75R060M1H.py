@@ -99,14 +99,14 @@ class BSIM3v3_Model:
         self.Pdiblb   = -0.08                  # -,     Body bias effect on DIBL
         
         # Geometry parameters
-        self.Leff     = 1.0e-6                 # m,     Effective channel length (1μm typical for power MOSFET)
-        self.Weff     = 20000e-6               # m,     Effective channel width (20mm for low Rds(on))
-        self.Ldrawn   = 1.0e-6                 # m,     Drawn channel length
-        self.Wdrawn   = 20000e-6               # m,     Drawn channel width
-        self.Xj       = 1.0e-6                 # m,     Junction depth
-        self.Tox      = 50e-9                  # m,     Oxide thickness (50nm typical for power MOSFET)
-        self.Toxm     = 50e-9                  # m,     Oxide thickness for modeling
-        self.Cox      = self.epsOx/self.Tox    # F/m²,  Oxide capacitance
+        self.Leff     = 50e-9                  # m,     Effective channel length (50nm)
+        self.Weff     = 2000e-6                # m,     Effective channel width (2mm)
+        self.Ldrawn   = 0.5e-6                 # m,     Drawn channel length
+        self.Wdrawn   = 2000e-6                # m,     Drawn channel width
+        self.Xj       = 0.5e-6                 # m,     Junction depth
+        self.Tox      = 1.2e-9                 # m,     Oxide thickness (1.2nm)
+        self.Toxm     = 1.2e-9                 # m,     Oxide thickness for modeling
+        self.Cox      = self.epsOx/self.Tox    # F/m²,  Oxide capacitance (~0.029 F/m²)
         
         # Geometry adjustment parameters
         self.Wint     = 0.0                    # m,     Internal width for narrow width effects
@@ -563,9 +563,9 @@ class BSIM3v3_Model:
         """
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
         Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
-        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbseff)  # Recalculate Vgsteff for consistency
         self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
-        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T)
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T, Vds)
         lamda       = self.A1 * Vgsteff + self.A2
         Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
         Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance

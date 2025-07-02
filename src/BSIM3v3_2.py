@@ -173,6 +173,8 @@ class BSIM3v3_Model:
         self.Cdscb    = 0                      # F/Vm², Body-bias sensitivity of Cdsc
         self.Abulk    = 0.8                    # -,     Bulk charge effect coefficient
 
+        
+
     def ni(self, T):
         """Calculate intrinsic carrier concentration (ni) based on temperature.
         
@@ -575,9 +577,9 @@ class BSIM3v3_Model:
         """
         Vbc         = 0.9 * (self.Phi_s(T) - np.square(self.K1) / (4 * np.square(self.K2)))
         Vbseff      = Vbc + 0.5 * (Vbs - Vbc - self.delta + np.sqrt(np.square(Vbs - Vbc - self.delta) + 4 * self.delta * Vbc))
-        Vgsteff     = self.calculate_Vgsteff(Vgs, T)
+        Vgsteff     = self.calculate_Vgsteff(Vgs, T, Vds, Vbseff)  # Recalculate Vgsteff for consistency
         self.lit    = np.sqrt(self.epsSi * self.Xj * self.Tox / self.epsOx) #Calculate intrinsic length (lit) for short-channel effects.
-        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T)
+        Vdsat       = self.calculate_Vdsat(Vgs, Vbseff, T, Vds)
         lamda       = self.A1 * Vgsteff + self.A2
         Esat        = 2 * self.Vsat_T_dependent(T) / (self.U0* (T/self.Tnom)**self.Ute)    #Calculate saturation electric field (Esat) for velocity saturation. 
         Rds         = self.calculate_Rds(Vds, Vgs, Vbseff, T)  # Calculate bias-dependent source/drain resistance
