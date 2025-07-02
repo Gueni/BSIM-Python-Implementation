@@ -40,7 +40,19 @@ class BSIM3v3_Model:
     """
     
     def __init__(self):
-        """Initialize BSIM3v3 model with parameters for AIMDQ75R060M1H power MOSFET"""
+        """Initialize BSIM3v3 model with default parameters for 180nm NMOS transistor.
+        
+        Sets up:
+        - Physical constants (permittivity, charge, etc.)
+        - Threshold voltage related parameters
+        - Mobility parameters
+        - Velocity saturation parameters
+        - Output resistance parameters
+        - Geometry parameters
+        - Doping concentrations
+        - Temperature parameters
+        - Subthreshold parameters
+        """
         # Physical constants (SI units)
         self.epsSi    = 11.7 * 8.854e-12       # F/m,   Silicon permittivity
         self.epsOx    = 3.9 * 8.854e-12        # F/m,   Silicon dioxide permittivity
@@ -49,25 +61,25 @@ class BSIM3v3_Model:
         self.NI0      = 1.45e16                # m-3,   Intrinsic carrier concentration at 300K
         
         # Threshold voltage related parameters
-        self.Vth0     = 2.5                    # V,     Zero-bias threshold voltage (higher for power MOSFET)
-        self.K1       = 1.2                    # √V,    First body effect coefficient
-        self.K2       = 0.05                   # -,     Second body effect coefficient
-        self.K3       = 10.0                   # -,     Narrow width effect coefficient
+        self.Vth0     = 2.4                   # V,     Zero-bias threshold voltage
+        self.K1       = 0.5                    # √V,    First body effect coefficient
+        self.K2       = 0.01                   # -,     Second body effect coefficient
+        self.K3       = 80.0                   # -,     Narrow width effect coefficient
         self.K3b      = 0                      # -,     Body effect on narrow width coefficient
-        self.Dvt0     = 1.5                    # -,     Short-channel effect coefficient at Vbs=0
-        self.Dvt1     = 0.35                   # -,     Short-channel effect coefficient
-        self.Dvt2     = -0.05                  # 1/V,   Short-channel effect coefficient for body bias
+        self.Dvt0     = 2.2                    # -,     Short-channel effect coefficient at Vbs=0
+        self.Dvt1     = 0.53                   # -,     Short-channel effect coefficient
+        self.Dvt2     = -0.032                 # 1/V,   Short-channel effect coefficient for body bias
         self.Dvt0w    = 0.0                    # -,     Narrow width effect coefficient at Vbs=0
         self.Dvt1w    = 5.3e6                  # -,     Narrow width effect coefficient
         self.Dvt2w    = -0.032                 # 1/V,   Narrow width effect coefficient for body bias
-        self.Nlx      = 1.74e-7                # m,     Lateral non-uniform doping parameter
+        self.Nlx      = 1.47e-7                # m,     Lateral non-uniform doping parameter
         self.W0       = 2.5e-6                 # m,     Narrow width parameter
-        self.Voff     = -0.1                   # V,     Offset voltage for subthreshold current
+        self.Voff     = -0.08                  # V,     Offset voltage for subthreshold current
         self.Keta     = -0.047                 # -,     Body effect coefficient for Voff
         
         # Mobility parameters
         self.mobMod   = 3                      # -,     Mobility model selector
-        self.U0       = 0.045                  # m²/V·s, Low-field mobility (lower for power MOSFET)
+        self.U0       = 0.35                   # m²/V·s, Low-field mobility (final tuned value)
         self.Ua       = 2.25e-9                # m/V,   First-order mobility degradation coefficient
         self.Ub       = 5.87e-19               # (m/V)², Second-order mobility degradation coefficient
         self.Uc       = -0.046                 # -,     Body-effect coefficient for mobility
@@ -76,16 +88,16 @@ class BSIM3v3_Model:
         self.Uc1      = -0.056                 # -,     Body-effect coefficient for mobility
         
         # Velocity saturation parameters
-        self.VSAT     = 1.0e5                  # m/s,   Saturation velocity (lower for power MOSFET)
+        self.VSAT     = 5.0e5                  # m/s,   Saturation velocity (near ballistic limit)
         self.A0       = 1.0                    # -,     Bulk charge effect coefficient
         self.A1       = 0.0                    # -,     Saturation voltage parameter
         self.A2       = 1.0                    # -,     Saturation voltage parameter
         self.B0       = 0.0                    # -,     Width effect on Abulk
         self.B1       = 0.0                    # -,     Width effect on Abulk
-        self.At       = 3.0e4                  # m/s,   Velocity saturation temperature coefficient
+        self.At       = 4.0e4                  # m/s,   Velocity saturation temperature coefficient
         
         # DIBL and substrate effect parameters
-        self.Pclm     = 1.3                    # -,     Channel length modulation coefficient
+        self.Pclm     = 1.1                    # -,     Channel length modulation coefficient
         self.Drout    = 0.56                   # -,     Output resistance DIBL coefficient
         self.Pvag     = 1e6                    # 1/V,   Gate voltage effect on output resistance
         self.Alpha0   = 1.2e-6                 # -,     Substrate current parameter
@@ -123,12 +135,12 @@ class BSIM3v3_Model:
         self.dL       = self.Lint + self.Ll/self.Ldrawn**self.Lln + self.Lw/self.Wdrawn**self.Lwn
         
         # Doping concentrations
-        self.Nch      = 1e23                   # m-3,   Channel doping concentration
+        self.Nch      = 5e23                   # m-3,   Channel doping concentration
         self.Ngate    = 1e25                   # m-3,   Poly doping concentration
         self.Nds      = 1e26                   # m-3,   Source/drain doping concentration
         
-        # Parasitic resistance (adjusted for 60mΩ Rds(on))
-        self.Rdsw     = 0.3                    # Ω·µm,  Source/drain resistance (scaled for power MOSFET)
+        # Parasitic resistance
+        self.Rdsw     = 0.5                    # Ω·µm,  Source/drain resistance (low for high current)
         self.Pr       = 1.0                    # -,     Resistance prefactor
         self.Wr       = 1.0                    # -,     Width dependence for resistance
         self.Prwb     = 0.1                    # -,     Body effect on resistance
@@ -141,10 +153,10 @@ class BSIM3v3_Model:
         
         # Temperature parameters
         self.Tnom     = 300.0                  # K,     Nominal temperature
-        self.Kt1      = -0.3                   # V,     Temperature coefficient for Vth
+        self.Kt1      = -0.15                  # V,     Temperature coefficient for Vth
         self.Kt1l     = 1e-9                   # V·m,   Temperature coefficient for Vth
         self.Kt2      = 0.03                   # -,     Temperature coefficient for Vth
-        self.Ute      = -1.5                   # -,     Mobility temperature exponent
+        self.Ute      = -1.8                   # -,     Mobility temperature exponent
         self.Ags      = 0.0                    # -,     Body effect coefficient for bulk charge
         
         # Additional parameters
@@ -160,6 +172,8 @@ class BSIM3v3_Model:
         self.Cdscd    = 0                      # F/Vm², Drain-bias sensitivity of Cdsc
         self.Cdscb    = 0                      # F/Vm², Body-bias sensitivity of Cdsc
         self.Abulk    = 0.8                    # -,     Bulk charge effect coefficient
+
+        
 
     def ni(self, T):
         """Calculate intrinsic carrier concentration (ni) based on temperature.

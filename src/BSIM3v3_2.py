@@ -61,7 +61,7 @@ class BSIM3v3_Model:
         self.NI0      = 1.45e16                # m-3,   Intrinsic carrier concentration at 300K
         
         # Threshold voltage related parameters
-        self.Vth0     = 0.40                   # V,     Zero-bias threshold voltage
+        self.Vth0     = 2.4                   # V,     Zero-bias threshold voltage
         self.K1       = 0.5                    # √V,    First body effect coefficient
         self.K2       = 0.01                   # -,     Second body effect coefficient
         self.K3       = 80.0                   # -,     Narrow width effect coefficient
