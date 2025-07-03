@@ -268,7 +268,6 @@ class BSIM3v3_Model:
         """
         
         # Calculate basic parameters
-        
         Phi_s = self.Phi_s(T)  # Surface potential
         Vbi = self.Vbi(T)  # Built-in potential
         
