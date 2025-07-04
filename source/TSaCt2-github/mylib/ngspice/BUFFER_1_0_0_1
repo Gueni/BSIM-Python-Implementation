@@ -1,0 +1,2 @@
+* gate type: INV1X1; name: [NAME]
+X[NAME] [IOUT_0] [NAME]/VSS [IN_0] [NAME]/VDD MODEL_INV1X1

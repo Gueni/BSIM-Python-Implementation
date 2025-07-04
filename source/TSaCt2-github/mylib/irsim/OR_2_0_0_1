@@ -1,0 +1,13 @@
+| gate type: NOR; name: [NAME]
+| units: 5 tech: scmos format: MIT
+p [IN_0] vdd [NAME]_a_36_216# 8 160 28 216
+p [IN_1] [NAME]_a_36_216# [IOUT_0] 8 160 48 216
+n [IN_0] gnd [IOUT_0] 8 40 28 24
+n [IN_1] [IOUT_0] gnd 8 40 60 24
+R gnd 43
+R [IOUT_0] 31
+R [NAME]_a_36_216# 37
+R [IN_1] 285
+R [IN_0] 276
+C vdd GND 5.38
+R vdd 1496

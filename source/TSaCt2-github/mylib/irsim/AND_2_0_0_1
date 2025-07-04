@@ -1,0 +1,13 @@
+| gate type: NAND; name: [NAME]
+| units: 5 tech: scmos format: MIT
+p [IN_0] vdd [IOUT_0] 8 80 28 296
+p [IN_1] [IOUT_0] vdd 8 80 60 296
+n [IN_0] gnd [NAME]_a_36_24# 8 80 28 24
+n [IN_1] [NAME]_a_36_24# [IOUT_0] 8 80 48 24
+R [NAME]_a_36_24# 25
+R gnd 32
+R [IOUT_0] 26
+R [IN_1] 285
+R [IN_0] 276
+C vdd GND 5.38
+R vdd 1503

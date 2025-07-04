@@ -1,0 +1,2 @@
+# gate type: NOR; name: [NAME]
+.gate NOR2X1 A=[IN_0] B=[IN_1] Y=[IOUT_0]

@@ -1,0 +1,2 @@
+# gate type: AND; name: [NAME]
+.gate PAND2X1 A=[IN_0] B=[IN_1] Y=[OUT_0]

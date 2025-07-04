@@ -1,0 +1,2 @@
+* gate type: NAND2X1; name: [NAME]
+X[NAME] [IOUT_0] [NAME]/VSS [IN_0] [IN_1] [NAME]/IN_NODE [NAME]/VDD MODEL_NAND2X1

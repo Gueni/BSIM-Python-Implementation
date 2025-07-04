@@ -1,0 +1,20 @@
+| IRSIM netlist gate template
+|
+| gate function: AND
+| noninverted inputs: 2
+| inverted inputs: 0
+| noninverted output: 0
+| noninverted outputs: 1
+|
+| [IN_X]    noninverted input
+| [IIN_X]   inverted input
+|
+| [OUT_X]   noninverted output
+| [IOUT_X]  inverted output
+|
+|
+| gate type: NAND; name: [NAME]
+p [IN_0] vdd [IOUT_0] length width
+p [IN_1] vdd [IOUT_0] length width
+n [IN_1] [NAME]_internalNode_0 [IOUT_0] length width
+n [IN_0] [NAME]_internalNode_0 gnd length width

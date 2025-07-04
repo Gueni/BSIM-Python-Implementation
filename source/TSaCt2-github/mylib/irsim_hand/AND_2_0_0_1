@@ -1,0 +1,5 @@
+| gate type: NAND; name: [NAME]
+p [IN_0] vdd [IOUT_0] 2 8
+p [IN_1] vdd [IOUT_0] 2 8
+n [IN_1] [NAME]_internalNode_0 [IOUT_0] 2 4
+n [IN_0] [NAME]_internalNode_0 gnd 2 4

@@ -1,0 +1,78 @@
+*** TEST 004 ***
+*
+* ngSPICE test for PLS experiments
+*
+* This test allows to simulate NMOS transistor under PLS
+*
+*
+* Author: Jan Belohoubek, 01/2019
+* jan.belohoubek@fit.cvut.cz
+*
+* https://users.fit.cvut.cz/~belohja4/
+*
+*
+* **************************************
+
+.include ../models.lib
+.include ../90nm_bulk.lib
+.include ../tsmc180nmcmos.lib
+
+* --- Settings
+.param showPlots = 1
+* redefine ...
+.include test004_settings.inc
+.csparam showPlots = {showPlots}
+.global showPlots
+* --- End of Settins
+
+* **************************************
+* --- Test ---
+* **************************************
+
+VVSUB VSUB 0 0.0V
+
+Vtrig LaserTrig 0 0 PWL(0ns 0V 40ns 0V 42ns SUPP 62ns SUPP 64ns 0V 100ns 0V)
+
+R_SUB psub VSUB 0.001
+
+XpsubIn psubIn VSS PSUB_IN
+Xnmos VDD VSS VSS psub psubIn LaserTrig SUBCKT_NMOS
+
+* **************************************
+* --- Simulation Settings ---
+* **************************************
+
+.tran .1ns 100ns
+.param SIMSTEP = '100ns/0.1ns'
+.csparam SIMSTEP = {SIMSTEP}
+
+* **************************************
+* --- Simulation Control ---
+* **************************************
+
+.control
+    run
+    
+    if ('showPlots'> 0)
+        plot i(vvdd) i(vvss) i(vvsub) i(vvsub)+i(vvss)
+        plot v(psubIn) v(psub)
+        plot v(vss) v(vdd)
+        plot ((v(xnmos.xsd.psub)-v(psubIn))/0.001)
+        plot v(xnmos.xsd.ctrl)
+    end
+    
+    let timeIndex = 0
+    while time[timeIndex] < 55ns
+      let timeIndex= timeIndex + 1
+    end
+    
+    print i(VVDD)[$&timeIndex]
+    print time[$&timeIndex]
+    
+    if ('showPlots' < 1)
+        quit
+    end
+    
+.endc
+
+.end

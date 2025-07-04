@@ -1,0 +1,2 @@
+# gate type: OR; name: [NAME]
+.gate POR2X1 A=[IN_0] B=[IN_1] Y=[OUT_0]

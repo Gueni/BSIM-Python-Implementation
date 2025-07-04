@@ -1,0 +1,9 @@
+| gate type: NOT; name: [NAME]
+| units: 5 tech: scmos format: MIT
+p [IN_0] vdd [IOUT_0] 8 80 28 296
+n [IN_0] gnd [IOUT_0] 8 40 28 24
+R gnd 11
+R [IOUT_0] 20
+R [IN_0] 276
+C vdd GND 4.71
+R vdd 1674

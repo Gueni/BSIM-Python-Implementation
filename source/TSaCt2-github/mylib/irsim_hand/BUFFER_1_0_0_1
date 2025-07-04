@@ -1,0 +1,3 @@
+| gate type: NOT; name: [NAME]
+p [IN_0] vdd [IOUT_0] 2 8
+n [IN_0] [IOUT_0] gnd 2 4

@@ -1,0 +1,26 @@
+/** @mainpage
+*
+* <p>This software processes combinational circuits given in the AIGER text format (<a href="http://fmv.jku.at/aiger/FORMAT">http://fmv.jku.at/aiger/FORMAT</a>) only. The AAG files are the only current input (note, that no latches must be present in source file).</p>
+* <p>The circuit from the input file is loaded and processed regarding the given command-line switches and commands. The loaded and processed circuits may be dumped to LaTeX, DOT, BLIF or other supported format for simulation or further analyzis.</p>
+*
+* <h2>Make:</h2>
+* <h3>$: make clean && make</h3>
+* <h3>$: make rmdoc && make doc</h3>
+* <h2>Usage:</h2>
+* <h3>$: ./TSaCt2 \-s SOURCE_FILE {\-v | \-vv} [-l mylib] [\-m {positive | negative | complementary}] [\-c "COMMANDS"]</h3>
+* <h3>Params: </h3>
+*  <ul>
+*        <li><b>-s SOURCE_FILE</b> -- aag source file name</li>
+*        <li><b>-l LIBRARY_NAME</b> -- cell library name</li>
+*        <li><b>-m MAP_ALGORITHM</b> -- cell mapping algorithm</li>
+*        <li><b>-v</b> -- activate trace debugging</li>
+*        <li><b>-vv</b> -- activate detailed debugging</li>
+*        <li><b>-h</b> -- print HELP</li>
+*        <li><b>-c COMMANDS</b> -- the script to be executed (list of commands deliminated by ";")</li>
+*   </ul>
+* <h2>Display command help:</h2>
+* <h3>$ ./TSaCt2 -h</h3>
+*
+*
+* <div align="right"><a href="http://users.fit.cvut.cz/~belohja4/"> Jan Bělohoubek</a> (jan.belohoubek[at]fit.cvut.cz) </div>
+*/

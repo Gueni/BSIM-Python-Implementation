@@ -1,0 +1,19 @@
+* ngSPICE netlist gate template
+*
+* gate function: AND
+* noninverted inputs: 2
+* inverted inputs: 0
+* noninverted output: 0
+* noninverted outputs: 1
+*
+* [IN_X]    noninverted input
+* [IIN_X]   inverted input
+*
+* [OUT_X]   noninverted output
+* [IOUT_X]  inverted output
+*
+*
+* gate type: NAND; name: [NAME]
+*
+* Use subcircuits defined in bone.spice here:
+*
