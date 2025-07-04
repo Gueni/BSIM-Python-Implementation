@@ -78,7 +78,7 @@ class BSIM3v3_Model:
         self.Keta     = -0.047                 # -,     Body effect coefficient for Voff
         
         # Mobility parameters
-        self.mobMod   = 3                      # -,     Mobility model selector
+        self.mobMod   = 2                      # -,     Mobility model selector
         self.U0       = 0.35                   # m²/V·s, Low-field mobility (final tuned value)
         self.Ua       = 2.25e-9                # m/V,   First-order mobility degradation coefficient
         self.Ub       = 5.87e-19               # (m/V)², Second-order mobility degradation coefficient
