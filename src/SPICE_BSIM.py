@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -196,7 +194,7 @@ if __name__ == '__main__':
     config = {
         'bsim_csv_path': r'D:\WORKSPACE\BSIM-Python-Implementation\data\BSIM3v3_2.csv',
         'ltspice_raw_path': r'D:\WORKSPACE\BSIM-Python-Implementation\model\Test.raw',
-        'output_html_path': r'D:\WORKSPACE\BSIM-Python-Implementation\results\id_vds_comparison.html'
+        'output_html_path': r'D:\WORKSPACE\BSIM-Python-Implementation\data\id_vds_comparison.html'
     }
     
     # Create output directory if it doesn't exist
