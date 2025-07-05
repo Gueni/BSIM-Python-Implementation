@@ -28,19 +28,19 @@ import BSIM3v3_2
 # import simple_model
 from Plot import MOSFETModelComparer
 #? -------------------------------------------------------------------------------
-points = 50     
+points = 10     
 Vgs_values = np.linspace(0, 20, points)
 Vds_values = np.linspace(0, 10, points)
 T_values   = np.linspace(300, 400.0, points)
 
-# LV_1_Shichman_Hodges_PATH   = r"D:\WORKSPACE\PyModules\10_pymos\data\LV_1_Shichman_Hodges.csv"
-# LV_13_BSIM_PATH             = r"D:\WORKSPACE\PyModules\10_pymos\data\LV_13_BSIM.csv"
-# LV_28_BSIM2_mod_PATH        = r"D:\WORKSPACE\PyModules\10_pymos\data\LV_28_BSIM2_mod.csv"
-# LV_39_BSIM2_PATH            = r"D:\WORKSPACE\PyModules\10_pymos\data\LV_39_BSIM2.csv"
-# LV_47_BSIM3v2_PATH          = r"D:\WORKSPACE\PyModules\10_pymos\data\LV_47_BSIM3v2.csv"
-# LV_49_BSIM3v3_PATH          = r"D:\WORKSPACE\PyModules\10_pymos\data\LV_49_BSIM3v3.csv"
-# simple_model_PATH           = r"D:\WORKSPACE\PyModules\10_pymos\data\simple_model.csv"
-BSIM3v3_2_PATH                   = r"D:\WORKSPACE\PyModules\10_pymos\data\BSIM3v3_2.csv"
+# LV_1_Shichman_Hodges_PATH   = r"D:\WORKSPACE\BSIM-Python-Implementation\data\LV_1_Shichman_Hodges.csv"
+# LV_13_BSIM_PATH             = r"D:\WORKSPACE\BSIM-Python-Implementation\data\LV_13_BSIM.csv"
+# LV_28_BSIM2_mod_PATH        = r"D:\WORKSPACE\BSIM-Python-Implementation\data\LV_28_BSIM2_mod.csv"
+# LV_39_BSIM2_PATH            = r"D:\WORKSPACE\BSIM-Python-Implementation\data\LV_39_BSIM2.csv"
+# LV_47_BSIM3v2_PATH          = r"D:\WORKSPACE\BSIM-Python-Implementation\data\LV_47_BSIM3v2.csv"
+# LV_49_BSIM3v3_PATH          = r"D:\WORKSPACE\BSIM-Python-Implementation\data\LV_49_BSIM3v3.csv"
+# simple_model_PATH           = r"D:\WORKSPACE\BSIM-Python-Implementation\data\simple_model.csv"
+BSIM3v3_2_PATH                   = r"D:\WORKSPACE\BSIM-Python-Implementation\data\BSIM3v3_2.csv"
 PLOT                        = True
 # LV_1_Shichman_Hodges        = LV_1_Shichman_Hodges.ShichmanHodgesModel()
 # LV_13_BSIM                  = LV_13_BSIM.BSIMLevel13Model()
