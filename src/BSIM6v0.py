@@ -516,7 +516,7 @@ if __name__ == "__main__":
     vbs_range = np.linspace(-0.5, 0, 5)  # Reduced range for 7nm
     
     # Create HTML file for plots
-    html_file = "bsimv6_plots.html"
+    html_file = r"D:\WORKSPACE\BSIM-Python-Implementation\data\bsimv6_plots.html"
     html_content = """
     <html>
     <head>

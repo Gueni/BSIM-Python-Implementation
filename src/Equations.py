@@ -32,58 +32,58 @@ class Equations:
         # ======================================================
         # FUNDAMENTAL PHYSICAL CONSTANTS
         # ======================================================
-        self.q = 1.6e-19       # Elementary charge [C]
-        self.k = 1.38e-23      # Boltzmann constant [J/K]
-        self.ε0 = 8.854e-12    # Vacuum permittivity [F/m]
+        self.q                 = 1.6e-19      # Elementary charge [C]
+        self.k                 = 1.38e-23     # Boltzmann constant [J/K]
+        self.ε0                = 8.854e-12    # Vacuum permittivity [F/m]
 
         # ======================================================
         # MATERIAL PROPERTIES
         # ======================================================
         # Permittivities
-        self.eps_ox = 3.9 * self.ε0      # SiO2 permittivity [F/m]
-        self.eps_si = 11.7 * self.ε0     # Silicon permittivity [F/m]
-        self.eps_sic = 9.7e-11      # SiC permittivity [F/m]
+        self.eps_ox            = 3.9 * self.ε0   # SiO2 permittivity [F/m]
+        self.eps_si            = 11.7 * self.ε0  # Silicon permittivity [F/m]
+        self.eps_sic           = 9.7e-11         # SiC permittivity [F/m]
 
         # Carrier properties
-        self.ni = 1.5e8            # Intrinsic carrier concentration [1/cm³]
-        self.NSS = 1.0             # Surface state density [1/cm²]
+        self.ni                = 1.5e8          # Intrinsic carrier concentration [1/cm³]
+        self.NSS               = 1.0            # Surface state density [1/cm²]
 
         # ======================================================
         # DEVICE DIMENSIONS (GEOMETRY)
         # ======================================================
         # Process variations
-        self.dpw = 1e-6            # P-well separation [m]
-        self.XJPW = 0.1e-6         # P-well junction depth [m]
-        self.H_by_eff = 1e-7       # Effective channel height [m]
+        self.dpw               = 1e-6           # P-well separation [m]
+        self.XJPW              = 0.1e-6         # P-well junction depth [m]
+        self.H_by_eff          = 1e-7           # Effective channel height [m]
 
         # Oxide parameters
-        self.TOX = 150e-10         # Gate oxide thickness [m]
-        self.tox = self.TOX             # Alias for oxide thickness
+        self.TOX               = 150e-10        # Gate oxide thickness [m]
+        self.tox               = self.TOX        # Alias for oxide thickness
 
         # ======================================================
         # DOPING CONCENTRATIONS
         # ======================================================
-        self.NSUB = 1e15           # Substrate doping [cm⁻³]
-        self.Nsurf = 1e17          # Surface doping [cm⁻³]
-        self.PPW = 1e17            # P-well doping [cm⁻³]
-        self.NJFET = 1e22          # JFET region doping [m⁻³]
+        self.NSUB              = 1e15           # Substrate doping [cm⁻³]
+        self.Nsurf             = 1e17           # Surface doping [cm⁻³]
+        self.PPW               = 1e17           # P-well doping [cm⁻³]
+        self.NJFET             = 1e22           # JFET region doping [m⁻³]
 
         # ======================================================
         # THRESHOLD VOLTAGE PARAMETERS
         # ======================================================
-        self.VFB = -0.576          # Flat-band voltage [V]
-        self.Vsurf = 2.0           # Surface potential transition [V]
+        self.VFB               = -0.576         # Flat-band voltage [V]
+        self.Vsurf             = 2.0            # Surface potential transition [V]
 
         # ======================================================
         # MOBILITY PARAMETERS
         # ======================================================
-        self.mu = 0.01             # General mobility [m²/V·s]
+        self.mu                = 0.01           # General mobility [m²/V·s]
 
         # ======================================================
         # ADDITIONAL PARAMETERS FOR COMPLETENESS
         # ======================================================
-        self.mjsurf = 0.5          # Surface junction grading coefficient
-        self.mj = 0.5              # Bulk junction grading coefficient
+        self.mjsurf            = 0.5            # Surface junction grading coefficient
+        self.mj                = 0.5            # Bulk junction grading coefficient
 
     def phi_t(self, T):
         """
