@@ -19,6 +19,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 #? -------------------------------------------------------------------------------
+
 class BSIM3v3_Model:
     """BSIM3v3 MOSFET model implementation for circuit simulation.
     
