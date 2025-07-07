@@ -1,2 +1,0 @@
-# gate type: NOT; name: [NAME]
-.gate INVX1 A=[IN_0] Y=[IOUT_0]

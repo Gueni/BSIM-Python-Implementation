@@ -19,7 +19,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
 #? -------------------------------------------------------------------------------
-#https://web.archive.org/web/20110909162138/http://www.mosis.com/Technical/Testdata/tsmc-018-prm.html
 class BSIM3v3_Model:
     """BSIM3v3 MOSFET model implementation for circuit simulation.
     
