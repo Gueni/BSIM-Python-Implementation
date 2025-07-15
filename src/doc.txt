@@ -297,3 +297,81 @@ This implementation provides a comprehensive BSIM3v3 model that can be easily in
 
 
 
+////////************************************///////////////////////***********************************************
+# Shichman-Hodges MOSFET Model Documentation
+
+## Overview
+
+The Shichman-Hodges model (Level 1 MOSFET model) is a basic analytical model for MOSFET transistors that provides a simple representation of transistor behavior in three operating regions: cutoff, linear, and saturation.
+
+## Model Parameters
+
+| Parameter Name      | Description | Units | Typical Value |
+|---------------------|-------------|-------|---------------|
+| **Physical Constants** | | | |
+| `q` | Elementary charge | C | 1.602176634e-19 |
+| `k` | Boltzmann constant | J/K | 1.380649e-23 |
+| `EG0` | Energy gap at 0K | eV | 1.16 |
+| `EGSLOPE` | Temperature coefficient for energy gap | eV/K | 4.73e-4 |
+| `EGTEMP` | Temperature parameter for energy gap | K | 636 |
+| `NI0` | Intrinsic carrier concentration at TNOM | cm⁻³ | 1.45e10 |
+| `NITEXP` | Temperature exponent for intrinsic carrier concentration | - | 1.5 |
+| `TNOM` | Nominal temperature | K | 300 |
+| **MOSFET Parameters** | | | |
+| `TPG` | Gate material type (0=Al, ±1=PolySi) | - | 0 or ±1 |
+| `NGATE` | Gate doping concentration | cm⁻³ | 1e20 |
+| `NSS` | Interface trap density | cm⁻² | 1e10 |
+| `COX` | Oxide capacitance per unit area | F/cm² | 3.45e-13 |
+| `DELVTO` | Threshold voltage adjustment | V | 0.0 |
+| `PHI` | Bulk Fermi potential | V | 0.7 |
+| `GAMMA` | Body effect coefficient | V^1/2 | 0.5 |
+| `PHIMS_OFFSET` | Work function offset for Al gates | V | 0.05 |
+| `KP` | Transconductance parameter | µA/V² | 50-200 |
+| `LAMBDA` | Channel length modulation parameter | V⁻¹ | 0.01-0.1 |
+| `Weff` | Effective channel width | µm | 1.0 |
+| `Leff` | Effective channel length | µm | 0.5 |
+| `ch_type` | Channel type (1=NMOS, -1=PMOS) | - | 1 or -1 |
+
+## Class Methods
+
+| Method | Parameters | Returns | Description |
+|--------|-----------|---------|-------------|
+| `vto(T)` | `T`: Temperature (K) | V | Calculates zero-bias threshold voltage at temperature T |
+| `vth(T, vsb)` | `T`: Temperature (K)<br>`vsb`: Source-bulk voltage (V) | V | Calculates threshold voltage including body bias effect |
+| `compute(Vgs, Vds, vsb, T)` | `Vgs`: Gate-source voltage (V)<br>`Vds`: Drain-source voltage (V)<br>`vsb`: Source-bulk voltage (V) [default: 0.0]<br>`T`: Temperature (K) [default: 350] | A | Computes drain current in appropriate operating region |
+
+## Usage Example
+
+```python
+from LV_1_Shichman_Hodges import ShichmanHodgesModel
+
+model = ShichmanHodgesModel()
+
+# Calculate current in saturation region
+Id = model.compute(Vgs=2.5, Vds=3.0, vsb=0.0, T=300)
+print(f"Drain current: {Id:.6f} A")
+
+# Calculate threshold voltages
+print(f"Vth @ 300K: {model.vth(T=300, vsb=0.0):.3f} V")
+print(f"Vth @ 350K: {model.vth(T=350, vsb=0.0):.3f} V")
+```
+
+## Key Features
+
+- Three operating regions:
+  - Cutoff (Vgs ≤ Vth)
+  - Linear (Vds < Vgs - Vth)
+  - Saturation (Vds ≥ Vgs - Vth)
+- Temperature-dependent threshold voltage
+- Body bias effect modeling
+- Channel length modulation effect
+
+## Limitations
+
+1. Level 1 model limitations:
+   - No short-channel effects
+   - No mobility degradation
+   - No subthreshold conduction
+   - No quantum effects
+
+2. Ensure all parameters are properly set before calculations.
