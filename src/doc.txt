@@ -1,0 +1,112 @@
+# BSIM3v3 MOSFET Model Documentation
+
+## Overview
+The BSIM3v3 (Berkeley Short-channel IGFET Model version 3.3) is a sophisticated MOSFET model developed at UC Berkeley for circuit simulation. This implementation models the drain current (Ids) and other characteristics of MOSFET transistors based on terminal voltages and physical parameters.
+ 
+### Key Features:
+- **Comprehensive Physical Modeling**: Includes short-channel effects, narrow width effects, mobility degradation, velocity saturation, and more
+- **Multiple Operating Regions**: Handles subthreshold, linear, and saturation regions with smooth transitions
+- **Temperature Dependence**: Models temperature effects on threshold voltage, mobility, and other parameters
+- **Advanced Effects**: Includes DIBL (Drain-Induced Barrier Lowering), channel length modulation, and parasitic resistances
+- **Smooth Transitions**: Uses smoothing functions for continuous behavior across operating regions
+
+### Model Parameters:
+The model includes over 50 physical parameters covering:
+- Threshold voltage characteristics
+- Mobility degradation
+- Velocity saturation
+- Channel length modulation
+- Subthreshold conduction
+- Temperature effects
+- Parasitic resistances
+- Geometry effects
+
+Here's the documentation for the `BSIM3v3_Model` class functions in a table format:
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| Function Name                | Description                                   | Parameters                                                     | Returns                         |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| __init__(self)               | Initializes BSIM3v3 model with default        | None                                                           | None                            |
+|                              | parameters for 180nm NMOS transistor          |                                                               |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| ni(self, T)                  | Calculates intrinsic carrier concentration    | T (float): Temperature in Kelvin                               | float: Intrinsic carrier        |
+|                              | based on temperature                         |                                                               | concentration (m⁻³)             |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| v_t(self, T)                 | Calculates thermal voltage (kT/q)            | T (float): Temperature in Kelvin                               | float: Thermal voltage (V)      |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| Phi_s(self, T)               | Calculates surface potential                 | T (float): Temperature in Kelvin                               | float: Surface potential (V)    |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| Xdep0(self, T)               | Calculates zero-bias depletion width         | T (float): Temperature in Kelvin                               | float: Depletion width (m)      |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| Vbi(self, T)                 | Calculates built-in potential                | T (float): Temperature in Kelvin                               | float: Built-in potential (V)   |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_Rds(self, Vds,     | Calculates bias-dependent source/drain       | Vds (float): Drain-source voltage                              | float: Source/drain             |
+| Vgs, Vbs, T)                 | resistance                                    | Vgs (float): Gate-source voltage                               | resistance (Ω)                  |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| Rdsw_T_dependent(self, T)    | Calculates temperature-dependent Rdsw        | T (float): Temperature                                         | float: Temperature-adjusted Rdsw|
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_V_th(self, Vds,    | Calculates threshold voltage including       | Vds (float): Drain-source voltage                              | float: Threshold voltage (V)    |
+| Vbs, T)                      | all effects                                   | Vbs (float): Bulk-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| vth_T_dependent(self, Vds,   | Calculates temperature-dependent Vth         | Vds (float): Drain-source voltage                              | float: Temperature-adjusted Vth |
+| Vbs, T)                      |                                               | Vbs (float): Bulk-source voltage                               | (V)                             |
+|                              |                                               | T (float): Temperature                                         |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_mobility(self,     | Calculates effective mobility with           | Vgs (float): Gate-source voltage                               | float: Effective mobility       |
+| Vgs, T, Vds, Vbs)            | degradation effects                           | T (float): Temperature                                         | (m²/V·s)                        |
+|                              |                                               | Vds (float): Drain-source voltage                              |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_Vgsteff(self, Vgs, | Calculates effective Vgs-Vth with            | Vgs (float): Gate-source voltage                               | float: Effective gate overdrive |
+| T, Vds, Vbs)                 | subthreshold smoothing                       | T (float): Temperature                                         | (V)                             |
+|                              |                                               | Vds (float): Drain-source voltage                              |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_Vdsat(self, Vgs,   | Calculates saturation voltage                | Vgs (float): Gate-source voltage                               | float: Saturation voltage (V)   |
+| Vbs, T, Vds)                 |                                               | Vbs (float): Bulk-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
+|                              |                                               | Vds (float): Drain-source voltage                              |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| Vsat_T_dependent(self, T)    | Calculates temperature-dependent saturation  | T (float): Temperature                                         | float: Saturation velocity (m/s)|
+|                              | velocity                                      |                                                               |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_Abulk(self, T, Vbs)| Calculates bulk charge effect coefficient    | T (float): Temperature                                         | float: Bulk charge coefficient  |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_Vdseff(self, Vds,  | Calculates effective Vds with smoothing      | Vds (float): Drain-source voltage                              | float: Effective Vds (V)        |
+| Vgs, Vbs, T)                 |                                               | Vgs (float): Gate-source voltage                               |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_subthreshold_       | Calculates subthreshold current              | Vgs (float): Gate-source voltage                               | float: Subthreshold current (A) |
+| current(self, Vgs, Vds, T,   |                                               | Vds (float): Drain-source voltage                              |                                 |
+| Vbs)                         |                                               | T (float): Temperature                                         |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_linear_current(     | Calculates linear region current             | Vds (float): Drain-source voltage                              | float: Linear current (A)       |
+| self, Vds, Vgs, T, Vbs)      |                                               | Vgs (float): Gate-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_saturation_         | Calculates saturation region current         | Vgs (float): Gate-source voltage                               | float: Saturation current (A)   |
+| current(self, Vgs, Vds, Vbs, |                                               | Vds (float): Drain-source voltage                              |                                 |
+| T)                           |                                               | Vbs (float): Bulk-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| Single_Current_Expression(    | Unified current expression for all regions   | Vgs (float): Gate-source voltage                               | float: Drain current (A)        |
+| self, Vgs, Vds, Vbs, T)      |                                               | Vds (float): Drain-source voltage                              |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| calculate_substrate_current(  | Calculates substrate current                 | Vgs (float): Gate-source voltage                               | float: Substrate current (A)    |
+| self, Vgs, Vds, Vbs, T)      |                                               | Vds (float): Drain-source voltage                              |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage                               |                                 |
+|                              |                                               | T (float): Temperature                                         |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+| compute(self, Vgs, Vds,       | Main interface for current calculation       | Vgs (float): Gate-source voltage                               | float: Drain current (A)        |
+| Vbs=0.0, T=300.0)            |                                               | Vds (float): Drain-source voltage                              |                                 |
+|                              |                                               | Vbs (float): Bulk-source voltage (default 0.0)                 |                                 |
+|                              |                                               | T (float): Temperature (default 300K)                          |                                 |
++------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
