@@ -110,3 +110,190 @@ Here's the documentation for the `BSIM3v3_Model` class functions in a table form
 |                              |                                               | Vbs (float): Bulk-source voltage (default 0.0)                 |                                 |
 |                              |                                               | T (float): Temperature (default 300K)                          |                                 |
 +------------------------------+-----------------------------------------------+---------------------------------------------------------------+---------------------------------+
+
+
+use case : 
+
+# BSIM3v3 MOSFET Model Documentation
+
+## Overview
+
+This documentation describes how to use the BSIM3v3 MOSFET model implementation for circuit simulation and analysis. The implementation consists of three main files:
+
+1. `BSIM3v3_2.py` - The core BSIM3v3 model implementation
+2. `main.py` - Example usage of the model
+3. `Plot.py` - Visualization and comparison tools
+
+## Example Use Case
+
+### 1. Basic Simulation
+
+Here's how to use the BSIM3v3 model to simulate MOSFET characteristics:
+
+```python
+from BSIM3v3_2 import BSIM3v3_Model
+
+# Initialize the model
+model = BSIM3v3_Model()
+
+# Define simulation conditions
+Vgs = 1.5  # Gate-source voltage (V)
+Vds = 1.0  # Drain-source voltage (V)
+Vbs = 0.0  # Bulk-source voltage (V)
+T = 300    # Temperature (K)
+
+# Compute drain current
+Ids = model.compute(Vgs, Vds, Vbs, T)
+print(f"Drain current: {Ids:.3e} A")
+```
+
+### 2. Sweeping Parameters (as in main.py)
+
+The `main.py` file shows how to perform parameter sweeps and save results:
+
+```python
+import numpy as np
+import pandas as pd
+from BSIM3v3_2 import BSIM3v3_Model
+
+# Define parameter ranges
+points = 10     
+Vgs_values = np.linspace(0, 20, points)
+Vds_values = np.linspace(0, 10, points)
+T_values = np.linspace(300, 400.0, points)
+
+# Initialize model
+model = BSIM3v3_Model()
+
+# Simulation function
+def simulate_model(model, T_values, Vgs_values, Vds_values, path):
+    records = []
+    combinations = [(T, Vgs, Vds) for T in T_values for Vgs in Vgs_values for Vds in Vds_values]
+    
+    for i, (T, Vgs, Vds) in enumerate(combinations):
+        Id = model.compute(Vgs, Vds, 0.0, T)
+        records.append({
+            'time': i // len(combinations),
+            'T': T,
+            'VGS': Vgs,
+            'VDS': Vds,
+            'ID': Id                
+        })
+    
+    df = pd.DataFrame(records)
+    df.to_csv(path, index=False)
+
+# Run simulation
+output_path = "BSIM3v3_simulation.csv"
+simulate_model(model, T_values, Vgs_values, Vds_values, output_path)
+```
+
+### 3. Visualization (as in Plot.py)
+
+The `Plot.py` file provides tools to visualize and compare simulation results:
+
+```python
+from Plot import MOSFETModelComparer
+
+# List of CSV files to compare (can be just one)
+csv_files = ["BSIM3v3_simulation.csv"]
+
+# Create and configure plotter
+plotter = MOSFETModelComparer(csv_files, output_html="MOSFET_analysis.html")
+
+# Generate plots
+plotter.plot()
+```
+
+This will create an interactive HTML file with three types of plots:
+1. Drain current vs. Temperature (at fixed Vgs and Vds)
+2. Drain current vs. Gate voltage (for different Vds values)
+3. Drain current vs. Drain voltage (for different Vgs values)
+
+## Key Features
+
+1. **Comprehensive BSIM3v3 Implementation**:
+   - Threshold voltage calculation with short-channel, narrow width, and DIBL effects
+   - Mobility degradation effects
+   - Velocity saturation
+   - Channel length modulation
+   - Subthreshold conduction
+   - Temperature effects
+   - Parasitic resistance effects
+
+2. **Visualization Capabilities**:
+   - Interactive plots with dropdown menus to select models
+   - Multiple plot types showing different characteristics
+   - HTML output for easy sharing
+
+3. **Parameter Sweeps**:
+   - Easy simulation across ranges of Vgs, Vds, and temperature
+   - CSV output for further analysis
+
+## Advanced Usage
+
+### Customizing Model Parameters
+
+You can modify model parameters after initialization:
+
+```python
+model = BSIM3v3_Model()
+
+# Change oxide thickness (in meters)
+model.Tox = 2e-9  
+model.Cox = model.epsOx / model.Tox  # Must update Cox when changing Tox
+
+# Change channel length and width (in meters)
+model.Leff = 100e-9
+model.Weff = 1e-6
+
+# Change threshold voltage parameters
+model.Vth0 = 0.5  # Zero-bias threshold voltage
+model.K1 = 0.6    # First body effect coefficient
+```
+
+### Accessing Intermediate Calculations
+
+The model provides methods to access intermediate calculations:
+
+```python
+# Get threshold voltage
+Vth = model.vth_T_dependent(Vds, Vbs, T)
+
+# Get effective mobility
+mobility = model.calculate_mobility(Vgs, T, Vds, Vbs)
+
+# Get saturation voltage
+Vdsat = model.calculate_Vdsat(Vgs, Vbs, T, Vds)
+```
+
+### Standalone Analysis
+
+The model can generate its own comprehensive characterization plots:
+
+```python
+model = BSIM3v3_Model()
+model.__init__()  # This will automatically generate and open an HTML with characterization plots
+```
+
+## Troubleshooting
+
+1. **Negative discriminant errors**: These may occur in Vdsat calculations. Try:
+   - Reducing voltage ranges
+   - Checking parameter values (especially mobility and velocity saturation)
+   
+2. **Unphysical results**: Verify:
+   - All parameters are in correct units (mostly SI units)
+   - Temperature is in Kelvin
+   - Voltages are reasonable for the technology
+
+3. **Visualization issues**: Ensure:
+   - CSV files are properly formatted
+   - Required columns (T, VGS, VDS, ID) are present
+   - File paths are correct
+
+This implementation provides a comprehensive BSIM3v3 model that can be easily integrated into circuit simulations or used for device characterization.
+
+
+
+
