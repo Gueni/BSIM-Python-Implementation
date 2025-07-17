@@ -333,7 +333,6 @@ The Shichman-Hodges model (Level 1 MOSFET model) is a basic analytical model for
 | `ch_type` | Channel type (1=NMOS, -1=PMOS) | - | 1 or -1 |
 
 ## Class Methods
-
 | Method | Parameters | Returns | Description |
 |--------|-----------|---------|-------------|
 | `vto(T)` | `T`: Temperature (K) | V | Calculates zero-bias threshold voltage at temperature T |
